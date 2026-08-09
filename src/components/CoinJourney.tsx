@@ -126,8 +126,15 @@ export default function CoinJourney() {
               st.rot = Math.round(st.rot / 360) * 360; // land upright
               setV(c.v);
             }
+          } else if (st.landed) {
+            // landed — sit exactly on the placement (moves with the page, no
+            // lag), so it's always in the right spot until the next hop
+            const c = read(st.landed);
+            st.x = c.x;
+            st.y = c.y;
+            st.scale = c.s;
+            setV(c.v);
           }
-          // when not hopping: hold x/y/scale exactly — pinned, no drift
         }
 
         const rot = vRef.current === "avatar" ? 0 : st.rot;
