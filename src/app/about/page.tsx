@@ -6,7 +6,12 @@ export default function AboutPage() {
   return (
     <Container className="py-12">
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="aspect-[4/5] rounded-3xl bg-[linear-gradient(135deg,#e7e5df,#d5d3cb)]" aria-hidden />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/adam-portrait.jpg"
+          alt="Adam at the FSTR chair"
+          className="aspect-[4/5] w-full rounded-3xl object-cover"
+        />
         <div>
           <Eyebrow>The Chair</Eyebrow>
           <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">

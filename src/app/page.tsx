@@ -102,9 +102,12 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="mt-6 flex items-center gap-3">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-mist font-display text-xl font-bold text-ink">
-                A
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/adam.jpg"
+                alt="Adam"
+                className="h-12 w-12 rounded-full object-cover ring-1 ring-steel/20"
+              />
               <span className="font-display text-lg font-semibold">Adam</span>
             </div>
           </div>
