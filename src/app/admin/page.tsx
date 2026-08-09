@@ -3,6 +3,7 @@ import Coin from "@/components/Coin";
 import { Container, Eyebrow, Num, Card } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import BarberGate from "@/components/BarberGate";
+import AdminNav from "@/components/AdminNav";
 import { getTodayBookings, getAdminNumbers } from "@/lib/data/admin";
 import { getDb } from "@/lib/data/db";
 import { fmtTime, fmtDay } from "@/lib/format";
@@ -102,29 +103,6 @@ export default async function AdminTodayPage() {
   );
 }
 
-export function AdminNav() {
-  const links = [
-    ["/admin", "Today"],
-    ["/admin/inbox", "Inbox"],
-    ["/admin/diary", "Diary"],
-    ["/admin/members", "Members"],
-    ["/admin/numbers", "Numbers"],
-    ["/admin/scan", "Scan"],
-  ];
-  return (
-    <nav className="-mx-5 flex gap-1 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {links.map(([href, label]) => (
-        <Link
-          key={href}
-          href={href}
-          className="shrink-0 rounded-full px-3 py-1.5 text-sm text-steel hover:bg-mist hover:text-ink"
-        >
-          {label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
 
 function Stat({
   label,

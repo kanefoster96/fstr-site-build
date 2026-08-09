@@ -45,12 +45,42 @@ const config: Config = {
           "0%": { transform: "translateY(12px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        // token "used" — lifts, tips onto the slot, shrinks away
+        "token-use": {
+          "0%": { transform: "translateY(0) scale(1) rotate(0)", opacity: "1" },
+          "35%": { transform: "translateY(-24px) scale(1.08) rotate(-6deg)", opacity: "1" },
+          "100%": { transform: "translateY(80px) scale(0.3) rotate(12deg)", opacity: "0" },
+        },
+        // token "gifted" — flips and sails off to a mate
+        "token-send": {
+          "0%": { transform: "translateX(0) rotateY(0) scale(1)", opacity: "1" },
+          "40%": { transform: "translateX(0) rotateY(180deg) scale(1.05)", opacity: "1" },
+          "100%": { transform: "translateX(160px) rotateY(180deg) scale(0.4)", opacity: "0" },
+        },
+        // idle collectible bob
+        float: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        pop: {
+          "0%": { transform: "scale(0.6)", opacity: "0" },
+          "60%": { transform: "scale(1.08)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "ring-fill": {
+          "0%": { strokeDashoffset: "289" },
+          "100%": { strokeDashoffset: "var(--ring-offset)" },
+        },
       },
       animation: {
         "coin-drop": "coin-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
         "coin-flip": "coin-flip 0.7s ease-in-out both",
         sheen: "sheen 2.4s ease-in-out infinite",
         "fade-up": "fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "token-use": "token-use 0.7s cubic-bezier(0.5, 0, 0.75, 0) both",
+        "token-send": "token-send 0.8s cubic-bezier(0.5, 0, 0.75, 0) both",
+        float: "float 4s ease-in-out infinite",
+        pop: "pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

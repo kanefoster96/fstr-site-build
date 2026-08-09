@@ -1,14 +1,22 @@
 import Link from "next/link";
 import Coin from "@/components/Coin";
+import ActiveTokenCard from "@/components/ActiveTokenCard";
+import AnimatedSubmit from "@/components/AnimatedSubmit";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSession } from "@/lib/auth";
-import { getWallet } from "@/lib/data/member";
-import { gbp, daysLeftLabel, fmtDateTime, fmtMonthDay } from "@/lib/format";
+import { getWallet, getUsual, getComingUp } from "@/lib/data/member";
 import { getDb } from "@/lib/data/db";
+import { gbp, daysLeftLabel, fmtDateTime, fmtMonthDay, fmtDay, fmtTime } from "@/lib/format";
+import { quickBookAction, quickGiftAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function WalletPage() {
+export default async function WalletPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ done?: string; gifted?: string; booked?: string; welcome?: string }>;
+}) {
+  const sp = await searchParams;
   const session = await getSession();
   if (!session.member) {
     return (
@@ -27,15 +35,32 @@ export default async function WalletPage() {
   }
 
   const wallet = (await getWallet(session.member.id))!;
+  const usual = await getUsual(session.member.id);
+  const comingUp = await getComingUp(session.member.id, 8);
   const db = await getDb();
   const now = db.clock.now;
-  const available = wallet.tokens.filter((t) => t.state === "ISSUED");
+
+  const active = wallet.tokens.filter((t) => t.state === "ISSUED");
   const reserved = wallet.tokens.filter((t) => t.state === "RESERVED");
   const gifted = wallet.tokens.filter((t) => t.state === "GIFTED");
+  const soonest = comingUp[0]?.slot;
+  const usualSlot = usual?.slot;
+  const walletFull = wallet.held >= db.settings.rules.max_held;
 
   return (
-    <Container className="py-12">
-      {/* Header */}
+    <Container className="py-10">
+      {/* Toasts */}
+      {sp.gifted && (
+        <Banner>
+          Gift sent — code <span className="num value">{sp.gifted}</span>. It&apos;ll bob back to you if
+          it&apos;s not used in 14 days.
+        </Banner>
+      )}
+      {sp.done === "booked" && <Banner>Booked — your token&apos;s reserved and the clock&apos;s frozen. ❄</Banner>}
+      {sp.done === "prebooked" && <Banner>Held for you — it confirms the moment your next token lands.</Banner>}
+      {(sp.booked || sp.welcome) && <Banner>You&apos;re all set. Welcome to FSTR. ✂</Banner>}
+
+      {/* Header + value chips */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>Your wallet</Eyebrow>
@@ -44,136 +69,229 @@ export default async function WalletPage() {
             Seat {wallet.seat} · {wallet.badges.join(" · ") || "Member"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button href="/me/book" className="text-sm">Book a cut</Button>
-          <Button href="/me/gift" variant="ghost" className="text-sm">Gift a token</Button>
+        <div className="flex gap-2 text-sm">
+          <Button href="/me/book" variant="ghost" className="text-sm">All slots</Button>
+          <Button href="/me/chat" variant="ghost" className="text-sm">Message</Button>
         </div>
       </div>
 
-      {/* Value strip: rate lock + savings (mono, brass) */}
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <Card className="!bg-mist">
-          <p className="text-sm text-steel">Your token</p>
-          <p className="mt-1">
-            <Num value className="text-2xl font-semibold">{gbp(wallet.lockedRate)}</Num>
-          </p>
-          <p className="num mt-1 text-xs text-steel">
-            Current rate {gbp(wallet.currentRate)} · you save {gbp(wallet.savePerCut)} every cut
-          </p>
-        </Card>
-        <Card className="!bg-mist">
-          <p className="text-sm text-steel">Saved this year</p>
-          <p className="mt-1"><Num value className="text-2xl font-semibold">{gbp(wallet.savedThisYear)}</Num></p>
-          <p className="num mt-1 text-xs text-steel">{wallet.cutsCount} cuts with us</p>
-        </Card>
-        <Card className="!bg-mist">
-          <p className="text-sm text-steel">Streak</p>
-          <p className="mt-1"><Num className="text-2xl font-semibold">{wallet.streakMonths}</Num> <span className="text-steel text-sm">months</span></p>
-          <p className="num mt-1 text-xs text-steel">Next token drops {fmtMonthDay(wallet.nextTokenDrops)}</p>
-        </Card>
+      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+        <Stat label="Your rate" value={gbp(wallet.lockedRate)} sub={`save ${gbp(wallet.savePerCut)}/cut`} brass />
+        <Stat label="Saved this year" value={gbp(wallet.savedThisYear)} sub={`${wallet.cutsCount} cuts`} brass />
+        <Stat label="Streak" value={`${wallet.streakMonths}`} sub="months" />
       </div>
 
-      {/* Next booking */}
-      {wallet.nextBooking && (
-        <div className="mt-8 rounded-2xl border border-brass/40 bg-mist p-6">
-          <div className="flex items-center gap-5">
-            <Coin size={72} ring={0.5} />
-            <div>
-              <p className="text-sm text-steel">Your next cut</p>
-              <p className="num mt-1 text-xl value">{fmtDateTime(wallet.nextBooking.slot.starts_at)}</p>
-              <p className="text-sm text-steel">
-                {wallet.nextBooking.booking.beard_addon ? "60 min · full beard" : "45 min · cut + beard tidy"} · token reserved, clock frozen
-              </p>
+      {/* ===== The dashboard ===== */}
+      <div className="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+        {/* Active tokens */}
+        <section>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-2xl font-semibold">
+              Active <span className="num text-steel">{active.length}/{db.settings.rules.max_held}</span>
+            </h2>
+            {walletFull && <span className="num text-xs text-brass">Wallet full — gift one</span>}
+          </div>
+
+          {active.length === 0 ? (
+            <div className="mt-3 flex flex-col items-center rounded-2xl bg-mist py-12">
+              <Coin size={84} ghost />
+              <p className="mt-4 text-steel">Your next token drops {fmtMonthDay(wallet.nextTokenDrops)}.</p>
             </div>
-          </div>
-        </div>
-      )}
+          ) : (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {active.map((t) => (
+                <ActiveTokenCard
+                  key={t.id}
+                  daysLeft={t.daysLeft}
+                  lifeFraction={t.lifeFraction}
+                  expiresLabel={daysLeftLabel(now, t.expires_at)}
+                  soonestSlotId={usualSlot?.id ?? soonest?.id}
+                  soonestSlotLabel={
+                    usualSlot
+                      ? `${fmtDay(usualSlot.starts_at).split(" ")[0]} ${fmtTime(usualSlot.starts_at)}`
+                      : soonest
+                        ? `${fmtDay(soonest.starts_at).split(" ")[0]} ${fmtTime(soonest.starts_at)}`
+                        : undefined
+                  }
+                  quickBookAction={quickBookAction}
+                  quickGiftAction={quickGiftAction}
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
-      {/* Prebook prompt / pending */}
-      {wallet.prebook ? (
-        <div className="mt-4 rounded-2xl bg-ink p-6 text-paper">
-          <p className="text-sm text-paper/70">Prebooked at the chair</p>
-          <p className="num mt-1 text-lg">{fmtDateTime(wallet.prebook.slot.starts_at)}</p>
-          <p className="mt-1 text-sm text-paper/70">
-            Provisional — confirms the moment your next token lands on {fmtMonthDay(wallet.nextTokenDrops)}.
-          </p>
-        </div>
-      ) : (
-        available.length === 0 &&
-        reserved.length === 0 && (
-          <div className="mt-4 rounded-2xl bg-mist p-6">
-            <p className="text-sm text-steel">
-              Your usual Thursday 11:30 is free in 4 weeks — want to hold it? Prebook at your next cut.
-            </p>
-          </div>
-        )
-      )}
-
-      {/* The coins */}
-      <h2 className="mt-12 font-display text-2xl font-semibold">Your tokens</h2>
-      {wallet.tokens.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center rounded-2xl bg-mist py-14">
-          <Coin size={88} ghost />
-          <p className="mt-4 text-steel">Your next token drops {fmtMonthDay(wallet.nextTokenDrops)}.</p>
-        </div>
-      ) : (
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {available.map((t) => (
-            <TokenCard key={t.id} state="Available" tone="brass">
-              <Coin size={96} ring={t.lifeFraction} />
-              <p className="num mt-3 text-sm">
-                Expires in <span className="value">{daysLeftLabel(now, t.expires_at)}</span>
-              </p>
-              <p className="num text-xs text-steel">{fmtMonthDay(t.expires_at)}</p>
-              <div className="mt-3 flex gap-2">
-                <Button href="/me/book" className="!px-4 !py-2 text-xs">Book</Button>
-                <Button href="/me/gift" variant="ghost" className="!px-4 !py-2 text-xs">Gift</Button>
+        {/* Your next move */}
+        <section>
+          <h2 className="font-display text-2xl font-semibold">Your next move</h2>
+          <div className="mt-3">
+            {wallet.nextBooking ? (
+              <div className="rounded-2xl border border-brass/40 bg-mist p-6">
+                <div className="flex items-center gap-4">
+                  <Coin size={64} ring={0.5} />
+                  <div>
+                    <p className="text-sm text-steel">You&apos;re booked in</p>
+                    <p className="num mt-1 text-xl value">{fmtDateTime(wallet.nextBooking.slot.starts_at)}</p>
+                    <p className="text-sm text-steel">
+                      {wallet.nextBooking.booking.beard_addon ? "60 min · full beard" : "45 min · clock frozen"}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </TokenCard>
-          ))}
-          {reserved.map((t) => (
-            <TokenCard key={t.id} state="Reserved" tone="ink">
-              <Coin size={96} ring={0.5} />
-              <p className="num mt-3 text-sm">Clock frozen ❄</p>
-              {t.slot && <p className="num text-xs text-steel">{fmtDateTime(t.slot.starts_at)}</p>}
-            </TokenCard>
-          ))}
-          {gifted.map((t) => (
-            <TokenCard key={t.id} state="Gifted" tone="steel">
-              <Coin size={96} flipped code={t.gift?.code} />
-              <p className="num mt-3 text-sm">{t.gift?.code}</p>
-              <p className="num text-xs text-steel">
-                {t.gift ? `Returns in ${daysLeftLabel(now, t.gift.expires_at)} if unused` : "Gifted"}
-              </p>
-            </TokenCard>
-          ))}
-        </div>
+            ) : wallet.prebook ? (
+              <div className="rounded-2xl bg-ink p-6 text-paper">
+                <p className="text-sm text-paper/70">Held for you</p>
+                <p className="num mt-1 text-lg">{fmtDateTime(wallet.prebook.slot.starts_at)}</p>
+                <p className="mt-1 text-sm text-paper/70">
+                  Provisional — confirms when your token lands {fmtMonthDay(wallet.nextTokenDrops)}.
+                </p>
+              </div>
+            ) : usualSlot ? (
+              <div className="rounded-2xl border border-brass/40 bg-mist p-6">
+                <p className="text-sm text-steel">Your usual</p>
+                <p className="num mt-1 text-xl">{usual!.label}</p>
+                <p className="text-sm text-steel">
+                  {active.length > 0 ? "Tap once — token on, done." : "No token yet — we'll hold it till your next drops."}
+                </p>
+                <AnimatedSubmit action={quickBookAction} anim="use" className="mt-4">
+                  <input type="hidden" name="slot_id" value={usualSlot.id} />
+                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-paper">
+                    <span data-coin style={{ display: "inline-block" }}>
+                      <Coin size={30} />
+                    </span>
+                    {active.length > 0 ? "Book my usual" : "Hold my usual"}
+                  </button>
+                </AnimatedSubmit>
+              </div>
+            ) : soonest ? (
+              <div className="rounded-2xl border border-brass/40 bg-mist p-6">
+                <p className="text-sm text-steel">Soonest free slot</p>
+                <p className="num mt-1 text-xl">{fmtDateTime(soonest.starts_at)}</p>
+                <AnimatedSubmit action={quickBookAction} anim="use" className="mt-4">
+                  <input type="hidden" name="slot_id" value={soonest.id} />
+                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-paper">
+                    <span data-coin style={{ display: "inline-block" }}>
+                      <Coin size={30} />
+                    </span>
+                    Grab this one
+                  </button>
+                </AnimatedSubmit>
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-mist p-6">
+                <p className="text-steel">Nothing to do right now. Your next token drops {fmtMonthDay(wallet.nextTokenDrops)}.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* Coming up — one-tap dates */}
+      {comingUp.length > 0 && active.length > 0 && (
+        <section className="mt-10">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-2xl font-semibold">Coming up</h2>
+            <Link href="/me/book" className="text-sm text-steel hover:text-ink">See all →</Link>
+          </div>
+          <p className="mt-1 text-sm text-steel">Tap a date to spend a token — no faff.</p>
+          <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {comingUp.map(({ slot, isUsual }) => (
+              <AnimatedSubmit key={slot.id} action={quickBookAction} anim="use" className="shrink-0">
+                <input type="hidden" name="slot_id" value={slot.id} />
+                <button
+                  className={`flex w-24 flex-col items-center rounded-2xl border p-3 ${
+                    isUsual ? "border-brass/60 bg-mist" : "border-steel/25 bg-paper"
+                  }`}
+                >
+                  <span data-coin style={{ display: "inline-block" }}>
+                    <Coin size={34} />
+                  </span>
+                  <span className="num mt-2 text-[11px] text-steel">{fmtDay(slot.starts_at)}</span>
+                  <span className="num text-sm">{fmtTime(slot.starts_at)}</span>
+                  {isUsual && <span className="num text-[9px] uppercase tracking-wide value">usual</span>}
+                </button>
+              </AnimatedSubmit>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Reserved / Gifted / stored coins */}
+      {(reserved.length > 0 || gifted.length > 0) && (
+        <section className="mt-10">
+          <h2 className="font-display text-2xl font-semibold">In play</h2>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {reserved.map((t) => (
+              <MiniCoin key={t.id} label="Reserved" tone="ink">
+                <Coin size={84} ring={0.5} />
+                <p className="num mt-2 text-sm">Clock frozen ❄</p>
+                {t.slot && <p className="num text-xs text-steel">{fmtDateTime(t.slot.starts_at)}</p>}
+              </MiniCoin>
+            ))}
+            {gifted.map((t) => (
+              <MiniCoin key={t.id} label="Gifted" tone="steel">
+                <Coin size={84} flipped code={t.gift?.code} />
+                <p className="num mt-2 text-sm">{t.gift?.code}</p>
+                <p className="num text-xs text-steel">
+                  {t.gift ? `back in ${daysLeftLabel(now, t.gift.expires_at)} if unused` : "gifted"}
+                </p>
+              </MiniCoin>
+            ))}
+          </div>
+        </section>
       )}
 
       <Hairline className="mt-12" />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
         <Link href="/me/profile" className="text-steel hover:text-ink">Profile & billing →</Link>
-        <Link href="/me/chat" className="text-steel hover:text-ink">Message the chair →</Link>
+        <Link href="/me/gift" className="text-steel hover:text-ink">Gift centre →</Link>
         <Link href="/how-it-works" className="text-steel hover:text-ink">The token rules →</Link>
       </div>
     </Container>
   );
 }
 
-function TokenCard({
-  state,
+function Banner({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-6 animate-fade-up rounded-xl border border-brass/40 bg-mist px-4 py-3 text-sm">
+      {children}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  sub,
+  brass,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  brass?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl bg-mist p-3 sm:p-4">
+      <p className="text-[11px] text-steel sm:text-xs">{label}</p>
+      <p className={`num mt-1 text-lg font-semibold sm:text-2xl ${brass ? "value" : ""}`}>{value}</p>
+      {sub && <p className="num text-[10px] text-steel sm:text-xs">{sub}</p>}
+    </div>
+  );
+}
+
+function MiniCoin({
+  label,
   tone,
   children,
 }: {
-  state: string;
-  tone: "brass" | "ink" | "steel";
+  label: string;
+  tone: "ink" | "steel";
   children: React.ReactNode;
 }) {
-  const border =
-    tone === "brass" ? "border-brass/40" : tone === "ink" ? "border-ink/20" : "border-steel/30";
+  const border = tone === "ink" ? "border-ink/20" : "border-steel/30";
   return (
     <div className={`flex flex-col items-center rounded-2xl border ${border} bg-paper p-5 text-center`}>
-      <span className="num text-[10px] uppercase tracking-[0.15em] text-steel">{state}</span>
+      <span className="num text-[10px] uppercase tracking-[0.15em] text-steel">{label}</span>
       <div className="mt-2">{children}</div>
     </div>
   );

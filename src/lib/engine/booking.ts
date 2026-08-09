@@ -179,6 +179,36 @@ export function bookOneOff(
   return booking;
 }
 
+/**
+ * Prebook a future slot before the token exists (§5). Holds the slot PENDING;
+ * when the next billing payment lands, the minted token auto-attaches and the
+ * booking flips to CONFIRMED. One prebook per future token.
+ */
+export function createPrebook(db: DataStore, memberId: string, slotId: string): Booking {
+  const slot = db.slots.find((s) => s.id === slotId);
+  if (!slot) throw new TokenError("Slot not found.");
+  if (slot.booked) throw new TokenError("That slot's just gone.");
+  const existing = db.bookings.find(
+    (b) => b.member_id === memberId && b.kind === "prebook_pending" && b.status === "pending",
+  );
+  if (existing) throw new TokenError("You've already got a prebook held. One per future token.");
+
+  slot.booked = true;
+  const booking: Booking = {
+    id: bookingId(),
+    member_id: memberId,
+    token_id: null,
+    slot_id: slotId,
+    kind: "prebook_pending",
+    status: "pending",
+    price_paid: 0,
+    created_via: "prebook",
+    created_at: db.clock.now,
+  };
+  db.bookings.push(booking);
+  return booking;
+}
+
 /** Cancel a member booking, applying the ≥24h rule to its token (§4.5). */
 export function cancelBooking(db: DataStore, bookingId: string, actor: string): { forfeited: boolean } {
   const booking = db.bookings.find((b) => b.id === bookingId);

@@ -2,6 +2,7 @@ import "server-only";
 import { getDb } from "./db";
 import type { Token, Booking, Slot, Gift, Pence } from "../types";
 import { daysBetween, firstOfNextMonth } from "../format";
+import { memberVisibleSlots } from "../engine/booking";
 
 export interface WalletToken extends Token {
   lifeFraction: number; // 0..1 remaining, for the countdown ring
@@ -101,4 +102,70 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
     badges: m.badges ?? [],
     nextTokenDrops: firstOfNextMonth(now),
   };
+}
+
+export interface UsualSlot {
+  label: string; // "Thursday 11:30"
+  dow: number;
+  time: string; // "11:30"
+  slot?: Slot; // the next matching bookable slot, if any
+}
+
+/**
+ * "Your usual" — the member's most-booked day-of-week + time from history, and
+ * the next matching open slot. Powers the one-tap rebook so they never have to
+ * think about it.
+ */
+export async function getUsual(memberId: string): Promise<UsualSlot | null> {
+  const db = await getDb();
+  const history = db.bookings.filter(
+    (b) => b.member_id === memberId && (b.status === "completed" || b.status === "confirmed"),
+  );
+  if (history.length === 0) return null;
+
+  const tally = new Map<string, number>();
+  for (const b of history) {
+    const slot = db.slots.find((s) => s.id === b.slot_id);
+    if (!slot) continue;
+    const d = new Date(slot.starts_at);
+    const key = `${d.getUTCDay()}|${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+    tally.set(key, (tally.get(key) ?? 0) + 1);
+  }
+  if (tally.size === 0) return null;
+
+  const [bestKey] = [...tally.entries()].sort((a, b) => b[1] - a[1])[0];
+  const [dowStr, time] = bestKey.split("|");
+  const dow = Number(dowStr);
+
+  const nextSlot = memberVisibleSlots(db)
+    .filter(
+      (s) => new Date(s.starts_at).getUTCDay() === dow && s.starts_at.slice(11, 16) === time,
+    )
+    .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at))[0];
+
+  return { label: `${fullDow(dow)} ${time}`, dow, time, slot: nextSlot };
+}
+
+export interface ComingUpSlot {
+  slot: Slot;
+  isUsual: boolean;
+}
+
+/** The soonest bookable slots, with the member's usual flagged. */
+export async function getComingUp(memberId: string, limit = 6): Promise<ComingUpSlot[]> {
+  const db = await getDb();
+  const usual = await getUsual(memberId);
+  return memberVisibleSlots(db)
+    .slice(0, limit)
+    .map((slot) => ({
+      slot,
+      isUsual:
+        !!usual &&
+        new Date(slot.starts_at).getUTCDay() === usual.dow &&
+        slot.starts_at.slice(11, 16) === usual.time,
+    }));
+}
+
+function fullDow(d: number): string {
+  return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d];
 }

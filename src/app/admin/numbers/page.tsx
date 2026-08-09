@@ -1,7 +1,7 @@
 import { Container, Eyebrow, Num, Card } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import BarberGate from "@/components/BarberGate";
-import { AdminNav } from "../page";
+import AdminNav from "@/components/AdminNav";
 import { getAdminNumbers } from "@/lib/data/admin";
 import { getDb } from "@/lib/data/db";
 import { gbp } from "@/lib/format";

@@ -6,7 +6,7 @@ import { parseTimeHints, slotsForHint } from "@/lib/engine/chat";
 import { fmtTime, fmtDay } from "@/lib/format";
 import { sendBarberMessage, offerSlotAction } from "./actions";
 import BarberGate from "@/components/BarberGate";
-import { AdminNav } from "../page";
+import AdminNav from "@/components/AdminNav";
 
 export const dynamic = "force-dynamic";
 
