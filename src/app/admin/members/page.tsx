@@ -4,6 +4,7 @@ import BarberGate from "@/components/BarberGate";
 import AdminNav from "@/components/AdminNav";
 import { getDb } from "@/lib/data/db";
 import { gbp, fmtMonthDay } from "@/lib/format";
+import { notifyWaitlistAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -81,9 +82,18 @@ export default async function MembersPage() {
           ) : (
             <ul className="mt-2 space-y-2">
               {db.waitlist.map((w) => (
-                <li key={w.id} className="flex items-center justify-between text-sm">
-                  <span>{w.contact}</span>
-                  <span className="num text-steel">since {fmtMonthDay(w.created_at)}</span>
+                <li key={w.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="min-w-0 truncate">{w.contact}</span>
+                  {w.notified_at ? (
+                    <span className="num shrink-0 text-xs value">notified · 48h</span>
+                  ) : (
+                    <form action={notifyWaitlistAction} className="shrink-0">
+                      <input type="hidden" name="waitlist_id" value={w.id} />
+                      <button className="num rounded-full border border-steel/50 px-3 py-1 text-xs hover:border-ink">
+                        Notify <span className="text-steel">· {fmtMonthDay(w.created_at)}</span>
+                      </button>
+                    </form>
+                  )}
                 </li>
               ))}
             </ul>

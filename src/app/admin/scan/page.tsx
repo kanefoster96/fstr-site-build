@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function ScanPage({
   searchParams,
 }: {
-  searchParams: Promise<{ done?: string }>;
+  searchParams: Promise<{ done?: string; prebooked?: string }>;
 }) {
   const session = await getSession();
   if (!session.isBarber) return <BarberGate />;
@@ -43,7 +43,10 @@ export default async function ScanPage({
       </div>
 
       {sp.done && (
-        <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">✓ Token redeemed and the cut logged.</p>
+        <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">
+          ✓ Token redeemed and the cut logged.
+          {sp.prebooked && " Their next is provisionally held — it confirms when their next token lands."}
+        </p>
       )}
 
       <div className="mt-6 flex items-center gap-3 rounded-2xl border border-dashed border-steel/40 p-6">
@@ -84,6 +87,10 @@ export default async function ScanPage({
                   className="flex-1 rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm outline-none focus:border-brass"
                 />
                 <Button type="submit" className="text-sm">Redeem token</Button>
+                <label className="flex items-center gap-1.5 text-xs text-steel sm:w-full">
+                  <input type="checkbox" name="prebook" className="accent-[var(--brass)]" />
+                  Book their next now (prebook their usual)
+                </label>
               </form>
             </Card>
           ))}
