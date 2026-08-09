@@ -169,15 +169,15 @@ export default async function HomePage() {
               </ul>
               <Button href="/book" variant="ghost" className="mt-5 w-full">Book a one-off</Button>
             </Card>
-            <Card className="!bg-ink text-paper">
+            <Card className="!bg-paper border-2 border-brass shadow-sm">
               <Coin size={52} className="mb-3" />
-              <p className="text-sm text-paper/70">Membership</p>
+              <p className="text-sm font-medium text-steel">Membership</p>
               <p className="mt-2">
-                <span className="text-paper/60">from </span>
+                <span className="text-steel">from </span>
                 <Num value className="text-4xl font-semibold">{gbp(seats.from_price)}</Num>
-                <span className="text-paper/60"> a cut</span>
+                <span className="text-steel"> a cut</span>
               </p>
-              <ul className="mt-4 space-y-2 text-sm text-paper/85">
+              <ul className="mt-4 space-y-2 text-sm text-ink">
                 {[
                   "A token for a full cut, every cycle",
                   "Beard tidy included",
@@ -193,7 +193,7 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ul>
-              <p className="num mt-4 text-xs text-paper/60">
+              <p className="num mt-4 text-xs text-steel">
                 Pick your pace when you join — every 2 to 6 weeks. Each token lasts two billing cycles,
                 so nothing goes to waste.
               </p>
@@ -206,22 +206,27 @@ export default async function HomePage() {
       {/* The home worker's barber */}
       <section className="mt-24">
         <Container>
-          <div className="flex flex-col gap-6 rounded-3xl bg-ink p-8 text-paper sm:flex-row sm:items-center sm:justify-between sm:p-12">
+          <div className="flex flex-col gap-6 rounded-3xl bg-brass p-8 text-ink sm:flex-row sm:items-center sm:justify-between sm:p-12">
             <div>
-              <Eyebrow>The home worker&apos;s barber</Eyebrow>
+              <p className="num text-xs uppercase tracking-[0.2em] text-ink/70">The home worker&apos;s barber</p>
               <p className="mt-3 max-w-lg font-display text-2xl font-semibold sm:text-3xl">
                 Get your cut while everyone else is at work.
               </p>
-              <p className="mt-3 max-w-lg text-paper/70">
+              <p className="mt-3 max-w-lg text-ink/80">
                 Book a quiet weekday appointment, take the chair straight away and get back to your
                 day. No busy shop, no waiting behind three other people and no losing your Saturday
                 morning.
               </p>
-              <p className="mt-3 max-w-lg text-sm text-paper/60">
+              <p className="mt-3 max-w-lg text-sm text-ink/70">
                 Need a Saturday instead? Members get first access to limited Saturday appointments.
               </p>
             </div>
-            <Button href="/join" className="shrink-0">Join FSTR</Button>
+            <Link
+              href="/join"
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink/90"
+            >
+              Join FSTR
+            </Link>
           </div>
         </Container>
       </section>
