@@ -103,7 +103,6 @@ function defaultSettings(): Settings {
     weekend_upgrade_surcharge: 1000,
     weekend_public_price: 3500,
     oneoff_price: 3500,
-    beard_addon_price: 800,
     pause_holding_fee: 500,
   };
 }

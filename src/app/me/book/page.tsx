@@ -135,7 +135,7 @@ export default async function MemberBookPage({
                       <p className="num text-lg">{fmtTime(s.starts_at)}</p>
                       <label className="mt-1 flex items-center gap-1.5 text-xs text-steel">
                         <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
-                        Full beard +{gbp(db.settings.beard_addon_price)}
+                        Add a beard trim — included (60 min)
                       </label>
                     </div>
                     <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>Book</Button>
@@ -176,7 +176,7 @@ export default async function MemberBookPage({
                       <p className="num text-lg">{fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}</p>
                       <label className="mt-1 flex items-center gap-1.5 text-xs text-steel">
                         <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
-                        Full beard +{gbp(db.settings.beard_addon_price)}
+                        Add a beard trim — included (60 min)
                       </label>
                     </div>
                     <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>Book</Button>
@@ -203,7 +203,7 @@ export default async function MemberBookPage({
                       <p className="num text-lg">{fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}</p>
                       <label className="mt-1 flex items-center gap-1.5 text-xs text-steel">
                         <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
-                        Full beard +{gbp(db.settings.beard_addon_price)}
+                        Add a beard trim — included (60 min)
                       </label>
                     </div>
                     <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>

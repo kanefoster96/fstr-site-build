@@ -133,7 +133,7 @@ export interface Booking {
 export interface Slot {
   id: string;
   starts_at: ISODate;
-  duration_mins: number; // 45 default, 60 for beard add-on
+  duration_mins: number; // 45 default, 60 when a (free) beard trim is added
   day_type: DayType;
   published: boolean;
   release_at: ISODate;
@@ -301,7 +301,6 @@ export interface Settings {
   weekend_upgrade_surcharge: Pence; // +£10 token upgrade
   weekend_public_price: Pence; // £35
   oneoff_price: Pence; // £35
-  beard_addon_price: Pence; // £8
   pause_holding_fee: Pence; // £5
 }
 

@@ -58,7 +58,7 @@ export function bookingConfirmedEmail(name: string, startsAt: string, beard: boo
     preview: fmtDateTime(startsAt),
     html: shell(
       "You're booked",
-      `<p>${fmtDateTime(startsAt)} — ${mono(beard ? "60" : "45")} min${beard ? ", full beard" : ""}. Your token's reserved and the clock's frozen until then.</p>
+      `<p>${fmtDateTime(startsAt)} — ${mono(beard ? "60" : "45")} min${beard ? ", with a beard trim" : ""}. Your token's reserved and the clock's frozen until then.</p>
        <p>Address and parking notes land 24 hours before.</p>`,
     ),
   };

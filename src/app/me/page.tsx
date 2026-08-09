@@ -241,7 +241,7 @@ export default async function WalletPage({
                     <p className="text-sm text-steel">You&apos;re booked in</p>
                     <p className="num mt-1 text-xl value">{fmtDateTime(wallet.nextBooking.slot.starts_at)}</p>
                     <p className="text-sm text-steel">
-                      {wallet.nextBooking.booking.beard_addon ? "60 min · full beard" : "45 min · clock frozen"}
+                      {wallet.nextBooking.booking.beard_addon ? "60 min · with beard trim" : "45 min · clock frozen"}
                     </p>
                   </div>
                 </div>

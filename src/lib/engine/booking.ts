@@ -171,8 +171,8 @@ export function bookWeekendUpgrade(
     throw new TokenError("Booking closes at midday the day before.");
   }
 
-  const beard = !!opts.beard;
-  const surcharge = db.settings.weekend_upgrade_surcharge + (beard ? db.settings.beard_addon_price : 0);
+  const beard = !!opts.beard; // free beard trim — just extends the session
+  const surcharge = db.settings.weekend_upgrade_surcharge;
   const id = bookingId();
   slot.booked = true;
   if (beard) slot.duration_mins = 60;
@@ -208,9 +208,8 @@ export function bookOneOff(
     throw new TokenError("Booking closes at midday the day before.");
   }
 
-  const beard = !!opts.beard;
-  const price: Pence =
-    db.settings.oneoff_price + (beard ? db.settings.beard_addon_price : 0);
+  const beard = !!opts.beard; // free beard trim — just extends the session
+  const price: Pence = db.settings.oneoff_price;
   slot.booked = true;
   if (beard) slot.duration_mins = 60;
 

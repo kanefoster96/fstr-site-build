@@ -41,7 +41,6 @@ export default async function SettingsPage({
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Money name="current_rate" label="Per token" value={P(s.current_rate)} />
             <Money name="oneoff_price" label="One-off cut" value={P(s.oneoff_price)} />
-            <Money name="beard_addon_price" label="Beard add-on" value={P(s.beard_addon_price)} />
             <Money name="weekend_public_price" label="Weekend (public)" value={P(s.weekend_public_price)} />
             <Money name="weekend_upgrade_surcharge" label="Weekend upgrade" value={P(s.weekend_upgrade_surcharge)} />
             <Money name="waitlist_price" label="Waitlist rate" value={P(s.waitlist_price)} />

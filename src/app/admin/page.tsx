@@ -73,7 +73,7 @@ export default async function AdminTodayPage() {
                 <p className="text-xs text-steel">
                   {member?.usual_cut ?? "One-off cut"}
                   {member?.notes ? ` · ${member.notes}` : ""}
-                  {booking.beard_addon ? " · +beard" : ""}
+                  {booking.beard_addon ? " · beard trim" : ""}
                 </p>
               </div>
               <span className="num rounded-full bg-mist px-3 py-1 text-[10px] uppercase tracking-wide">

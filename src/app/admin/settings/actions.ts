@@ -24,7 +24,6 @@ export async function updateSettingsAction(formData: FormData) {
     // Pricing
     s.current_rate = pounds("current_rate", s.current_rate);
     s.oneoff_price = pounds("oneoff_price", s.oneoff_price);
-    s.beard_addon_price = pounds("beard_addon_price", s.beard_addon_price);
     s.weekend_public_price = pounds("weekend_public_price", s.weekend_public_price);
     s.weekend_upgrade_surcharge = pounds("weekend_upgrade_surcharge", s.weekend_upgrade_surcharge);
     s.waitlist_price = pounds("waitlist_price", s.waitlist_price);

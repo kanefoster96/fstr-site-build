@@ -82,7 +82,7 @@ export default async function OneOffBookPage({
                 className="w-full rounded-lg border border-steel/40 bg-paper px-3 py-2.5 text-sm outline-none focus:border-brass" />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
-                Full beard service +{gbp(db.settings.beard_addon_price)} (60 min)
+                Add a beard trim — included (60 min)
               </label>
               <Button type="submit" className="w-full">
                 Pay {gbp(db.settings.oneoff_price)} — book it
