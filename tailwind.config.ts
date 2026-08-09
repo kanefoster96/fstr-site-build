@@ -71,6 +71,11 @@ const config: Config = {
           "0%": { strokeDashoffset: "289" },
           "100%": { strokeDashoffset: "var(--ring-offset)" },
         },
+        // seamless horizontal loop — track holds two copies, slides one width
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "coin-drop": "coin-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -81,6 +86,7 @@ const config: Config = {
         "token-send": "token-send 0.8s cubic-bezier(0.5, 0, 0.75, 0) both",
         float: "float 4s ease-in-out infinite",
         pop: "pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
+        marquee: "marquee 32s linear infinite",
       },
     },
   },

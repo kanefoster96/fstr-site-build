@@ -1,11 +1,19 @@
 import Link from "next/link";
 import Coin from "@/components/Coin";
 import TokenExplainer from "@/components/TokenExplainer";
+import WorkMarquee from "@/components/WorkMarquee";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSeatSummary } from "@/lib/data/queries";
 import { gbp } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+// Placeholder member reviews — swap for real ones before launch.
+const REVIEWS = [
+  { quote: "Best cut I've had in years. Adam actually listens, and it's the same every time now.", name: "Callum R.", meta: "Member · North Shields" },
+  { quote: "Quiet, no waiting, in and out on my lunch. Sorts my beard too without me asking twice.", name: "Danny M.", meta: "Member · Wallsend" },
+  { quote: "Sound bloke, proper job. Booking with a token is dead easy and I never miss a slot.", name: "Reece T.", meta: "Member · Whitley Bay" },
+];
 
 export default async function HomePage() {
   const seats = await getSeatSummary();
@@ -16,12 +24,9 @@ export default async function HomePage() {
       {/* Hero — lead with Adam's standards */}
       <section className="pt-10 sm:pt-14">
         <Container className="flex flex-col items-center text-center animate-fade-up">
-          <div className="relative mb-8">
-            <Coin size={100} className="mx-auto" />
-            <div className="absolute -bottom-2 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
-          </div>
+          <Coin size={44} className="mb-5" />
 
-          <Eyebrow>North Tyneside · One barber · One chair</Eyebrow>
+          <Eyebrow>North Tyneside · Trusted by local members</Eyebrow>
           <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] sm:text-6xl">
             A proper cut,
             <br />
@@ -231,22 +236,36 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* Recent cuts */}
+      {/* Trust — recent work marquee + member reviews */}
       <section className="mt-24">
         <Container>
           <div className="flex items-end justify-between">
-            <Eyebrow>Recent cuts</Eyebrow>
+            <Eyebrow>Recent work</Eyebrow>
             <Link href="/about" className="text-sm text-steel hover:text-ink">More on the chair →</Link>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={i}
-                src={`/recent-${i}.jpg`}
-                alt="A recent FSTR cut"
-                className="aspect-square w-full rounded-2xl object-cover"
-              />
+          <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold sm:text-4xl">
+            Fresh from the chair.
+          </h2>
+        </Container>
+
+        <div className="mt-6">
+          <WorkMarquee images={["/recent-1.jpg", "/recent-2.jpg", "/recent-3.jpg", "/recent-4.jpg"]} />
+        </div>
+
+        <Container className="mt-16">
+          <div className="flex items-center justify-center gap-2">
+            <span className="value text-lg tracking-widest" aria-hidden>★★★★★</span>
+            <Eyebrow>Trusted by local members</Eyebrow>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {REVIEWS.map((r) => (
+              <figure key={r.name} className="rounded-2xl border border-steel/20 bg-paper p-6">
+                <span className="value text-sm tracking-widest" aria-hidden>★★★★★</span>
+                <blockquote className="mt-2 text-steel">“{r.quote}”</blockquote>
+                <figcaption className="mt-4 text-sm font-medium">
+                  {r.name} <span className="num text-steel">· {r.meta}</span>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </Container>
