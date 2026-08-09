@@ -265,9 +265,9 @@ export function buildSeed(): DataStore {
         day_type: isWeekend ? "weekend" : "weekday",
         published: true,
         release_at: release,
-        // Saturday: members get 48h early access (token + £10) before it goes
-        // public at £35. Weekdays: members get first look for 7 days.
-        member_only_until: isWeekend ? addDays(starts, -2) : addDays(release, 7),
+        // Saturday: members get the first 48h after release (token + £10),
+        // then it goes public at £35. Weekdays: members get first look 7 days.
+        member_only_until: isWeekend ? addDays(release, 2) : addDays(release, 7),
         capacity: 1,
         booked: false,
       });

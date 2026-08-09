@@ -144,30 +144,47 @@ export default async function MemberBookPage({
             top-up, or just pay for it.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {weekend.map((s) => (
-              <div key={s.id} className="rounded-2xl border border-brass/40 bg-paper p-4">
-                <p className="num text-lg">
-                  {fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <form action={bookWeekendUpgradeAction}>
-                    <input type="hidden" name="slot_id" value={s.id} />
-                    <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>
-                      Token +{gbp(db.settings.weekend_upgrade_surcharge)}
-                    </Button>
-                  </form>
-                  <form action={bookWeekendPaidAction}>
-                    <input type="hidden" name="slot_id" value={s.id} />
-                    <Button type="submit" variant="ghost" className="!px-4 !py-2 text-xs">
-                      Pay {gbp(db.settings.weekend_public_price)}
-                    </Button>
-                  </form>
+            {weekend.map((s) => {
+              const earlyAccess =
+                !!s.member_only_until && Date.parse(db.clock.now) < Date.parse(s.member_only_until);
+              return (
+                <div key={s.id} className="rounded-2xl border border-brass/40 bg-paper p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="num text-lg">
+                      {fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}
+                    </p>
+                    {earlyAccess && (
+                      <span className="num rounded-full bg-mist px-2 py-0.5 text-[10px] uppercase tracking-wide value">
+                        Members first
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <form action={bookWeekendUpgradeAction}>
+                      <input type="hidden" name="slot_id" value={s.id} />
+                      <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>
+                        Token +{gbp(db.settings.weekend_upgrade_surcharge)}
+                      </Button>
+                    </form>
+                    {!earlyAccess && (
+                      <form action={bookWeekendPaidAction}>
+                        <input type="hidden" name="slot_id" value={s.id} />
+                        <Button type="submit" variant="ghost" className="!px-4 !py-2 text-xs">
+                          Pay {gbp(db.settings.weekend_public_price)}
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                  <p className="num mt-2 text-[11px] text-steel">
+                    {earlyAccess
+                      ? `Your 48h head start — upgrade a token before it opens to all at ${gbp(db.settings.weekend_public_price)}.`
+                      : available === 0
+                        ? `No token — pay ${gbp(db.settings.weekend_public_price)} to book.`
+                        : `Open to all · token +${gbp(db.settings.weekend_upgrade_surcharge)} or ${gbp(db.settings.weekend_public_price)}.`}
+                  </p>
                 </div>
-                {available === 0 && (
-                  <p className="num mt-2 text-[11px] text-steel">No token — pay {gbp(db.settings.weekend_public_price)} to book.</p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
