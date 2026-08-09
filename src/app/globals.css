@@ -14,11 +14,24 @@
   --paper: #fcfcfa; /* page background, warm white */
   --ink: #111413; /* near-black text */
   --steel: #8b9196; /* secondary text, hairlines, chrome */
-  --brass: #a98c4b; /* the token metal — value only */
+  --brass: #b5891a; /* the value accent — a bolder, legible gold */
   --mist: #efefea; /* cards, wells, section breaks */
 
-  --brass-light: #c8ad70;
-  --brass-dark: #7d6832;
+  --brass-light: #f2d778;
+  --brass-dark: #8a6608;
+
+  /* The token metals. Gold = live/usable, silver = gift-only (expired). Bold,
+     premium, and edged so they never blend into the warm-white background. */
+  --coin-gold-hi: #ffe884;
+  --coin-gold: #fbc21b;
+  --coin-gold-deep: #c6890c;
+  --coin-gold-rim: #9a6b08;
+  --coin-gold-ink: #7a5406;
+  --coin-silver-hi: #fdfeff;
+  --coin-silver: #c6cdd5;
+  --coin-silver-deep: #9aa2ab;
+  --coin-silver-rim: #767e88;
+  --coin-silver-ink: #565e67;
 
   --font-display: "Clash Display", system-ui, sans-serif;
   --font-body: "General Sans", system-ui, sans-serif;

@@ -2,13 +2,14 @@ import Link from "next/link";
 import Coin from "@/components/Coin";
 import ActiveTokenCard from "@/components/ActiveTokenCard";
 import AnimatedSubmit from "@/components/AnimatedSubmit";
+import GiftOnlyCard from "@/components/GiftOnlyCard";
 import PlanPicker from "@/components/PlanPicker";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import { getWallet, getUsual, getComingUp } from "@/lib/data/member";
 import { getDb } from "@/lib/data/db";
 import { gbp, daysLeftLabel, fmtDateTime, fmtMonthDay, fmtDay, fmtTime } from "@/lib/format";
-import { quickBookAction, quickGiftAction, upgradeMembershipAction } from "./actions";
+import { quickBookAction, quickGiftAction, upgradeMembershipAction, giftTokenByIdAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export default async function WalletPage({
   const stored = issued.slice(wallet.activeCap);
   const reserved = wallet.tokens.filter((t) => t.state === "RESERVED");
   const gifted = wallet.tokens.filter((t) => t.state === "GIFTED");
+  const expired = wallet.tokens.filter((t) => t.state === "EXPIRED");
   const soonest = comingUp[0]?.slot;
   const usualSlot = usual?.slot;
   const walletFull = wallet.held >= db.settings.rules.max_held;
@@ -319,8 +321,8 @@ export default async function WalletPage({
         </section>
       )}
 
-      {/* Reserved / Gifted / stored coins */}
-      {(reserved.length > 0 || gifted.length > 0) && (
+      {/* Reserved / Gifted / gift-only coins */}
+      {(reserved.length > 0 || gifted.length > 0 || expired.length > 0) && (
         <section className="mt-10">
           <h2 className="font-display text-2xl font-semibold">In play</h2>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -333,12 +335,15 @@ export default async function WalletPage({
             ))}
             {gifted.map((t) => (
               <MiniCoin key={t.id} label="Gifted" tone="steel">
-                <Coin size={84} flipped code={t.gift?.code} />
+                <Coin size={84} tone="silver" flipped code={t.gift?.code} />
                 <p className="num mt-2 text-sm">{t.gift?.code}</p>
                 <p className="num text-xs text-steel">
                   {t.gift ? `back in ${daysLeftLabel(now, t.gift.expires_at)} if unused` : "gifted"}
                 </p>
               </MiniCoin>
+            ))}
+            {expired.map((t) => (
+              <GiftOnlyCard key={t.id} tokenId={t.id} giftAction={giftTokenByIdAction} />
             ))}
           </div>
         </section>

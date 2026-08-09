@@ -98,6 +98,32 @@ export async function changePlanAction(formData: FormData) {
   redirect(`${base}?plan=${weeks}`);
 }
 
+/** Gift a specific token by id (used for gift-only / expired silver coins). */
+export async function giftTokenByIdAction(formData: FormData) {
+  const session = await getSession();
+  if (!session.member) redirect("/join");
+  const tokenId = String(formData.get("token_id"));
+  const to = String(formData.get("to_contact") ?? "").trim();
+  const m = session.member;
+
+  const outcome = await mutate((db) => {
+    const token = db.tokens.find((t) => t.id === tokenId && t.member_id === m.id);
+    if (!token) return { error: "not-found" as const };
+    try {
+      const gift = giftToken(db, tokenId, m.id, to || "a mate");
+      sendMail(db, "gift_sent", m.email, giftSentEmail(m.name, gift.to_contact, gift.code));
+      if (to.includes("@")) sendMail(db, "gift_received", to, giftReceivedEmail(m.name, gift.code, gift.expires_at));
+      return { code: gift.code };
+    } catch (e) {
+      return { error: (e as Error).message };
+    }
+  });
+
+  revalidatePath("/me");
+  if ("error" in outcome) redirect("/me?done=gift-failed");
+  redirect(`/me?gifted=${outcome.code}`);
+}
+
 /** One-tap gift of the soonest available token. */
 export async function quickGiftAction(formData: FormData) {
   const session = await getSession();

@@ -53,7 +53,7 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
   const lifeDays = db.settings.rules.token_life_days;
 
   const tokens: WalletToken[] = db.tokens
-    .filter((t) => t.member_id === memberId && t.state !== "EXPIRED" && t.state !== "REDEEMED")
+    .filter((t) => t.member_id === memberId && t.state !== "REDEEMED")
     .map((t) => {
       const daysLeft = t.frozen_at ? daysBetween(now, t.expires_at) : daysBetween(now, t.expires_at);
       return {

@@ -29,7 +29,11 @@ export function giftToken(
 ): Gift {
   const t = db.tokens.find((x) => x.id === tokenId);
   if (!t) throw new TokenError(`Token ${tokenId} not found`);
-  if (t.state !== "ISSUED") throw new TokenError("Only an available token can be gifted.");
+  // Live tokens and expired (gift-only) tokens can both be gifted — an expired
+  // cut is never lost, it just goes silver and giftable.
+  if (t.state !== "ISSUED" && t.state !== "EXPIRED") {
+    throw new TokenError("Only a live or gift-only token can be gifted.");
+  }
   if (t.member_id !== fromMemberId) throw new TokenError("That token isn't yours to gift.");
 
   const id = `gift_${Date.now().toString(36)}_${giftCounter}`;
