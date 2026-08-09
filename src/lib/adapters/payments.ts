@@ -49,7 +49,7 @@ export function invoicePaid(db: DataStore, memberId: string, isFirst = false): W
     }
     return {
       ok: true,
-      message: "Wallet full (2 held) — billing paused this cycle. Nothing charged, nothing minted.",
+      message: `Account full (${db.settings.rules.max_held} held) — nothing charged, nothing minted this cycle. Suggest switching to a longer plan.`,
     };
   }
 

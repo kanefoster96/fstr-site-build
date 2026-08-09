@@ -27,6 +27,16 @@ export interface Wallet {
   streakMonths: number;
   badges: string[];
   nextTokenDrops: string;
+  // Plan / holding
+  cycleWeeks: number;
+  maxHeld: number;
+  activeCap: number; // 2
+  storeCap: number; // 3
+  atCap: boolean; // held >= maxHeld
+  showPlanNudge: boolean; // held >= plan_prompt_threshold
+  planLocked: boolean; // already changed this cycle
+  nextBillingAt: string;
+  plans: number[];
 }
 
 export async function getWallet(memberId: string): Promise<Wallet | null> {
@@ -100,7 +110,16 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
     cutsCount,
     streakMonths: m.streak_months ?? 0,
     badges: m.badges ?? [],
-    nextTokenDrops: firstOfNextMonth(now),
+    nextTokenDrops: sub?.next_billing_at ?? firstOfNextMonth(now),
+    cycleWeeks: sub?.cycle_weeks ?? db.settings.default_cycle_weeks,
+    maxHeld: db.settings.rules.max_held,
+    activeCap: db.settings.rules.active_display,
+    storeCap: db.settings.rules.store_cap,
+    atCap: held >= db.settings.rules.max_held,
+    showPlanNudge: held >= db.settings.rules.plan_prompt_threshold,
+    planLocked: sub?.plan_locked_until_next_billing ?? false,
+    nextBillingAt: sub?.next_billing_at ?? firstOfNextMonth(now),
+    plans: db.settings.plans,
   };
 }
 

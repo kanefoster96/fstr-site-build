@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { mutate } from "@/lib/data/db";
 import { getSession } from "@/lib/auth";
 import { bookWithToken, createPrebook } from "@/lib/engine/booking";
+import { changePlan, PlanError } from "@/lib/engine/membership";
 import { giftToken } from "@/lib/engine/gifts";
 import { sendMail } from "@/lib/adapters/mail";
 import { bookingConfirmedEmail, giftSentEmail, giftReceivedEmail } from "@/lib/emails";
@@ -41,6 +42,30 @@ export async function quickBookAction(formData: FormData) {
   revalidatePath("/me");
   revalidatePath("/me/book");
   redirect(`/me?done=${encodeURIComponent(outcome)}`);
+}
+
+/** Change billing cadence (2/3/4/5/6-week plan), once per cycle. */
+export async function changePlanAction(formData: FormData) {
+  const session = await getSession();
+  if (!session.member) redirect("/join");
+  const weeks = Number(formData.get("cycle_weeks"));
+  const from = String(formData.get("from") ?? "me");
+
+  const result = await mutate((db) => {
+    try {
+      changePlan(db, session.member!.id, weeks);
+      return { ok: true as const };
+    } catch (e) {
+      if (e instanceof PlanError) return { error: e.message };
+      throw e;
+    }
+  });
+
+  revalidatePath("/me");
+  revalidatePath("/me/profile");
+  const base = from === "profile" ? "/me/profile" : "/me";
+  if ("error" in result) redirect(`${base}?plan=locked`);
+  redirect(`${base}?plan=${weeks}`);
 }
 
 /** One-tap gift of the soonest available token. */

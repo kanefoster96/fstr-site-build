@@ -74,8 +74,14 @@ export interface Subscription {
   id: string;
   member_id: string;
   tier: SubscriptionTier;
-  price_locked: Pence; // the rate this member is locked at
-  billing_day: number; // day-of-month 1..28
+  price_locked: Pence; // the locked price per token (per billing cycle)
+  billing_day: number; // day-of-month (legacy display only)
+  // Variable cadence: a token mints every `cycle_weeks` weeks. Members can
+  // change plan once per billing cycle (2/3/4/5/6 weeks).
+  cycle_weeks: number; // 2..6, default 4
+  last_billing_at: ISODate | null;
+  next_billing_at: ISODate;
+  plan_locked_until_next_billing: boolean; // one change per cycle
   status: SubscriptionStatus;
   started_at: ISODate;
   cancel_effective_at: ISODate | null;
@@ -238,10 +244,17 @@ export interface Settings {
   reveal_threshold: number; // 0.85 — per-day gate
   // Hidden days still open up close-in, so last-minute bookers can grab them.
   last_minute_days: number; // 3 — slots within this window are always bookable
+  // Membership plans: a token mints every N weeks. Members can change once per
+  // billing cycle. Same locked price per token; cadence sets frequency.
+  plans: number[]; // [2,3,4,5,6] weeks
+  default_cycle_weeks: number; // 4
   // rule numbers (all admin-editable, defaults as specced §13)
   rules: {
     token_life_days: number; // 60
-    max_held: number; // 2
+    max_held: number; // 5 total (2 active + up to 3 stored)
+    active_display: number; // 2 — shown prominently as "active"
+    store_cap: number; // 3 — additional "stored" tokens allowed
+    plan_prompt_threshold: number; // 3 — nudge to slow cadence at/above this held
     gift_life_days: number; // 14
     cancel_cutoff_hours: number; // 24
     cancel_extend_days: number; // 7

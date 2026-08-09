@@ -2,6 +2,7 @@ import Link from "next/link";
 import Coin from "@/components/Coin";
 import ActiveTokenCard from "@/components/ActiveTokenCard";
 import AnimatedSubmit from "@/components/AnimatedSubmit";
+import PlanPicker from "@/components/PlanPicker";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import { getWallet, getUsual, getComingUp } from "@/lib/data/member";
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function WalletPage({
   searchParams,
 }: {
-  searchParams: Promise<{ done?: string; gifted?: string; booked?: string; welcome?: string }>;
+  searchParams: Promise<{ done?: string; gifted?: string; booked?: string; welcome?: string; plan?: string }>;
 }) {
   const sp = await searchParams;
   const session = await getSession();
@@ -40,7 +41,9 @@ export default async function WalletPage({
   const db = await getDb();
   const now = db.clock.now;
 
-  const active = wallet.tokens.filter((t) => t.state === "ISSUED");
+  const issued = wallet.tokens.filter((t) => t.state === "ISSUED");
+  const active = issued.slice(0, wallet.activeCap);
+  const stored = issued.slice(wallet.activeCap);
   const reserved = wallet.tokens.filter((t) => t.state === "RESERVED");
   const gifted = wallet.tokens.filter((t) => t.state === "GIFTED");
   const soonest = comingUp[0]?.slot;
@@ -59,6 +62,10 @@ export default async function WalletPage({
       {sp.done === "booked" && <Banner>Booked — your token&apos;s reserved and the clock&apos;s frozen. ❄</Banner>}
       {sp.done === "prebooked" && <Banner>Held for you — it confirms the moment your next token lands.</Banner>}
       {(sp.booked || sp.welcome) && <Banner>You&apos;re all set. Welcome to FSTR. ✂</Banner>}
+      {sp.plan === "locked" && <Banner>You&apos;ve already changed plan this cycle — switch again after your next token.</Banner>}
+      {sp.plan && sp.plan !== "locked" && (
+        <Banner>Plan updated — a token every <span className="num value">{sp.plan}</span> weeks now.</Banner>
+      )}
 
       {/* Header + value chips */}
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -83,16 +90,19 @@ export default async function WalletPage({
 
       {/* ===== The dashboard ===== */}
       <div className="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        {/* Active tokens */}
+        {/* Active + stored tokens */}
         <section>
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-2xl font-semibold">
-              Active <span className="num text-steel">{active.length}/{db.settings.rules.max_held}</span>
+              Active <span className="num text-steel">{active.length}/{wallet.activeCap}</span>
+              {stored.length > 0 && (
+                <span className="num text-steel"> · Stored {stored.length}/{wallet.storeCap}</span>
+              )}
             </h2>
-            {walletFull && <span className="num text-xs text-brass">Wallet full — gift one</span>}
+            {walletFull && <span className="num text-xs text-brass">Account full</span>}
           </div>
 
-          {active.length === 0 ? (
+          {issued.length === 0 ? (
             <div className="mt-3 flex flex-col items-center rounded-2xl bg-mist py-12">
               <Coin size={84} ghost />
               <p className="mt-4 text-steel">Your next token drops {fmtMonthDay(wallet.nextTokenDrops)}.</p>
@@ -117,6 +127,38 @@ export default async function WalletPage({
                   quickGiftAction={quickGiftAction}
                 />
               ))}
+            </div>
+          )}
+
+          {/* Stored — banked, ready when you are */}
+          {stored.length > 0 && (
+            <div className="mt-3">
+              <p className="num text-xs uppercase tracking-[0.15em] text-steel">Stored · ready when you are</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {stored.map((t) => (
+                  <div key={t.id} className="flex flex-col items-center">
+                    <Coin size={52} ring={t.lifeFraction} />
+                    <span className="num mt-1 text-[11px] text-steel">{daysLeftLabel(now, t.expires_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Plan nudge — appears once you're banking tokens (§ holding >= 3) */}
+          {wallet.showPlanNudge && (
+            <div className="mt-4 rounded-2xl border border-brass/40 bg-mist p-5">
+              <p className="font-display text-lg font-semibold">
+                {wallet.atCap ? "Your account's full" : "You're banking tokens"}
+              </p>
+              <p className="mt-1 text-sm text-steel">
+                {wallet.atCap
+                  ? `You're holding ${wallet.maxHeld}. Nothing's charged until you've room. Slow to a longer plan so tokens don't pile up — or gift a couple to mates.`
+                  : `You've ${issued.length + gifted.length} on the go. If cuts are less frequent, stretch your plan so a token drops less often — you'll never waste one.`}
+              </p>
+              <div className="mt-3">
+                <PlanPicker plans={wallet.plans} current={wallet.cycleWeeks} locked={wallet.planLocked} from="me" />
+              </div>
             </div>
           )}
         </section>
@@ -151,7 +193,7 @@ export default async function WalletPage({
                 <p className="text-sm text-steel">Your usual</p>
                 <p className="num mt-1 text-xl">{usual!.label}</p>
                 <p className="text-sm text-steel">
-                  {active.length > 0 ? "Tap once — token on, done." : "No token yet — we'll hold it till your next drops."}
+                  {issued.length > 0 ? "Tap once — token on, done." : "No token yet — we'll hold it till your next drops."}
                 </p>
                 <AnimatedSubmit action={quickBookAction} anim="use" className="mt-4">
                   <input type="hidden" name="slot_id" value={usualSlot.id} />
@@ -159,7 +201,7 @@ export default async function WalletPage({
                     <span data-coin style={{ display: "inline-block" }}>
                       <Coin size={30} />
                     </span>
-                    {active.length > 0 ? "Book my usual" : "Hold my usual"}
+                    {issued.length > 0 ? "Book my usual" : "Hold my usual"}
                   </button>
                 </AnimatedSubmit>
               </div>
@@ -187,7 +229,7 @@ export default async function WalletPage({
       </div>
 
       {/* Coming up — one-tap dates */}
-      {comingUp.length > 0 && active.length > 0 && (
+      {comingUp.length > 0 && issued.length > 0 && (
         <section className="mt-10">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-2xl font-semibold">Coming up</h2>

@@ -5,13 +5,14 @@ import { getDb } from "@/lib/data/db";
 import { cancelStats } from "@/lib/engine/membership";
 import { gbp, fmtMonthDay } from "@/lib/format";
 import { pauseAction, cancelAction } from "./actions";
+import PlanPicker from "@/components/PlanPicker";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ paused?: string; cancelled?: string }>;
+  searchParams: Promise<{ paused?: string; cancelled?: string; plan?: string }>;
 }) {
   const sp = await searchParams;
   const session = await getSession();
@@ -45,19 +46,47 @@ export default async function ProfilePage({
           30 days to reclaim your {gbp(stats.lockedRate)} rate.
         </p>
       )}
+      {sp.plan === "locked" && (
+        <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">
+          You&apos;ve already changed plan this cycle — you can switch again after your next token.
+        </p>
+      )}
+      {sp.plan && sp.plan !== "locked" && (
+        <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">
+          Plan updated — a token every <span className="num value">{sp.plan}</span> weeks.
+        </p>
+      )}
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {/* Billing summary */}
         <Card className="!bg-mist">
           <p className="text-sm font-medium">Billing</p>
           <dl className="mt-3 space-y-2 text-sm">
-            <Row k="Your rate"><Num value>{gbp(stats.lockedRate)}</Num> / month</Row>
-            <Row k="Current rate"><Num>{gbp(stats.currentRate)}</Num> / month</Row>
-            <Row k="Billing day"><Num>{sub?.billing_day ?? "—"}</Num></Row>
+            <Row k="Price per token"><Num value>{gbp(stats.lockedRate)}</Num></Row>
+            <Row k="Current rate"><Num>{gbp(stats.currentRate)}</Num> / token</Row>
+            <Row k="Cadence">a token every <Num>{sub?.cycle_weeks ?? 4}</Num> wks</Row>
+            <Row k="Next token"><Num>{sub ? fmtMonthDay(sub.next_billing_at) : "—"}</Num></Row>
             <Row k="Status"><span className="capitalize">{sub?.status ?? "—"}</span></Row>
             <Row k="You save"><Num value>{gbp(stats.saved)}</Num> so far</Row>
           </dl>
           <p className="num mt-4 text-xs text-steel">Mock Stripe portal — wires in later.</p>
+        </Card>
+
+        {/* Plan / cadence */}
+        <Card className="!bg-mist">
+          <p className="text-sm font-medium">Your plan</p>
+          <p className="mt-1 text-sm text-steel">
+            A token every <Num>{sub?.cycle_weeks ?? 4}</Num> weeks. Same {gbp(stats.lockedRate)} per token —
+            cadence just sets how often one drops. Change once per cycle.
+          </p>
+          <div className="mt-4">
+            <PlanPicker
+              plans={db.settings.plans}
+              current={sub?.cycle_weeks ?? db.settings.default_cycle_weeks}
+              locked={sub?.plan_locked_until_next_billing ?? false}
+              from="profile"
+            />
+          </div>
         </Card>
 
         {/* Preferences */}

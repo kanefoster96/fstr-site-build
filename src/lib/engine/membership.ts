@@ -67,12 +67,17 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
     streak_months: 0,
     badges: seat <= 50 ? ["Founding Member"] : [],
   };
+  const cycle = db.settings.default_cycle_weeks;
   const subscription: Subscription = {
     id: `sub_${id}`,
     member_id: id,
     tier: "monthly",
     price_locked: rate,
     billing_day: new Date(db.clock.now).getUTCDate(),
+    cycle_weeks: cycle,
+    last_billing_at: db.clock.now,
+    next_billing_at: addDays(db.clock.now, cycle * 7),
+    plan_locked_until_next_billing: false,
     status: "active",
     started_at: db.clock.now,
     cancel_effective_at: null,
@@ -104,6 +109,30 @@ export function cancelStats(db: DataStore, memberId: string): {
     cutsHad,
     saved: cutsHad * Math.max(0, db.settings.oneoff_price - lockedRate),
   };
+}
+
+export class PlanError extends Error {}
+
+/**
+ * Change billing cadence (2/3/4/5/6-week plan). Allowed once per billing cycle.
+ * Recomputes the next mint from the last billing date so switching to a shorter
+ * plan brings the next token sooner, a longer plan pushes it out.
+ */
+export function changePlan(db: DataStore, memberId: string, cycleWeeks: number): Subscription {
+  const sub = db.subscriptions.find((s) => s.member_id === memberId);
+  if (!sub) throw new PlanError("No subscription.");
+  if (!db.settings.plans.includes(cycleWeeks)) throw new PlanError("That plan isn't offered.");
+  if (sub.plan_locked_until_next_billing) {
+    throw new PlanError("You can change plan once per cycle — next change after your next token.");
+  }
+  if (cycleWeeks === sub.cycle_weeks) return sub;
+  sub.cycle_weeks = cycleWeeks;
+  sub.plan_locked_until_next_billing = true;
+  const base = sub.last_billing_at ?? db.clock.now;
+  const next = addDays(base, cycleWeeks * 7);
+  // Never schedule a mint in the past — if the new date has passed, mint next day.
+  sub.next_billing_at = new Date(next) < new Date(db.clock.now) ? addDays(db.clock.now, 1) : next;
+  return sub;
 }
 
 export function pauseMembership(db: DataStore, memberId: string): void {

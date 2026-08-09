@@ -63,9 +63,14 @@ function defaultSettings(): Settings {
     fill_order: [5, 4, 3, 2, 1], // Fri→Mon; Friday is the anchor
     reveal_threshold: 0.85,
     last_minute_days: 3,
+    plans: [2, 3, 4, 5, 6],
+    default_cycle_weeks: 4,
     rules: {
       token_life_days: 60,
-      max_held: 2,
+      max_held: 5,
+      active_display: 2,
+      store_cap: 3,
+      plan_prompt_threshold: 3,
       gift_life_days: 14,
       cancel_cutoff_hours: 24,
       cancel_extend_days: 7,
@@ -207,12 +212,17 @@ export function buildSeed(): DataStore {
     };
     members.push(m);
 
+    const billingDay = 1 + (seat % 27);
     subscriptions.push({
       id: `sub_${seat}`,
       member_id: id,
       tier: "monthly",
       price_locked: priceForSeat(seat),
-      billing_day: 1 + (seat % 27),
+      billing_day: billingDay,
+      cycle_weeks: 4,
+      last_billing_at: addDays(NOW, -(7 + (seat % 21))),
+      next_billing_at: addDays(NOW, 1 + (seat % 21)),
+      plan_locked_until_next_billing: false,
       status: "active",
       started_at: joined,
       cancel_effective_at: null,
@@ -312,12 +322,25 @@ export function buildSeed(): DataStore {
     }
   }
 
-  // Persona: new dad with 2 banked tokens (wallet full → billing will pause).
+  // Persona: new dad banking tokens (holds 3 → sees the "slow your plan" nudge).
   {
     const m = members[6];
     m.notes = "New dad — banking tokens, tight on time.";
-    // remove any auto token, give exactly two fresh ISSUED
     for (let k = 0; k < 2; k++) mintToken(m.id, addDays(NOW, -(5 + k * 3)));
+    // (already has one auto token from the loop → 3 total held)
+  }
+
+  // Persona: a collector holding the full 5, with billing imminent — demoing
+  // "your account's full, switch to a longer plan?".
+  {
+    const m = members[9];
+    m.notes = "Collector — wallet's full, billing due.";
+    const sub = subscriptions.find((s) => s.member_id === m.id)!;
+    sub.next_billing_at = addDays(NOW, 1);
+    sub.last_billing_at = addDays(NOW, -27);
+    // ensure exactly 5 held: count current ISSUED/GIFTED, top up
+    const held = () => tokens.filter((t) => t.member_id === m.id && (t.state === "ISSUED" || t.state === "GIFTED")).length;
+    while (held() < 5) mintToken(m.id, addDays(NOW, -(1 + held())));
   }
 
   // Persona: serial gifter + a gift in flight (GIFTED, code visible).
