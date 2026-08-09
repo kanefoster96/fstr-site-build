@@ -10,11 +10,11 @@ import Dock from "./Dock";
  * highlights whichever the coin is on.
  */
 const STEPS = [
-  { key: "join", variant: "gold" as const, title: "Join", body: "£25 a month — one full haircut and a beard tidy, every month." },
-  { key: "added", variant: "gold" as const, title: "Your cut is added", body: "A haircut lands in your account on your billing date. You've got 60 days to use it." },
-  { key: "book", variant: "gold" as const, title: "Book your time", body: "Pick a weekday appointment up to two weeks ahead. Can't see the time you need? Just message me." },
-  { key: "saved", variant: "ghost" as const, title: "I save your cut", body: "Once we get it right, I save the lengths, details and how you like it — so next time's easy." },
-  { key: "gift", variant: "silver" as const, title: "Can't use it?", body: "It rolls over for one more cycle. Still stuck? Gift the cut to a mate." },
+  { key: "join", variant: "gold" as const, title: "Join", body: "Membership is £25 a month — one full haircut and a beard tidy, every month." },
+  { key: "added", variant: "gold" as const, title: "A token lands", body: "On your billing date a token — the gold coin — drops into your account. One token is one cut, and it's good for 60 days." },
+  { key: "book", variant: "gold" as const, title: "Use it to book", body: "Spend your token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message me." },
+  { key: "saved", variant: "ghost" as const, title: "I save your cut", body: "Once we get it right, I save the lengths, the blend and how you like it — so next time you don't have to explain a thing." },
+  { key: "gift", variant: "silver" as const, title: "Not used it?", body: "Your token rolls over for another month. Still can't use it? It turns giftable — the silver coin — so you can send the cut to a mate." },
 ];
 
 export default function TokenExplainer() {

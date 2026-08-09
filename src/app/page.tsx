@@ -19,10 +19,13 @@ export default async function HomePage() {
       {/* Hero — lead with Adam's standards */}
       <section className="pt-10 sm:pt-14">
         <Container className="flex flex-col items-center text-center animate-fade-up">
-          <div className="relative mb-8">
+          <div className="relative mb-3">
             <Dock size={200} variant="gold" className="mx-auto" />
             <div className="absolute -bottom-3 left-1/2 h-6 w-36 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
           </div>
+          <p className="mb-8 text-sm text-steel">
+            Your token — one lands each month, and each one is a cut.
+          </p>
 
           <Eyebrow>North Tyneside · One barber · One chair</Eyebrow>
           <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] sm:text-6xl">
@@ -31,8 +34,8 @@ export default async function HomePage() {
             <span className="value">done properly.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-md text-lg text-steel">
-            No rushing. No waiting around. I take the time to understand what you actually want,
-            save the details of your cut and get it right every time.
+            I&apos;m Adam. No rushing, no waiting around — I take the time to understand what you
+            actually want, save the details of your cut, and get it right every time.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button href="/join">Join FSTR · {gbp(seats.current_rate)} a month</Button>
@@ -114,8 +117,13 @@ export default async function HomePage() {
         <Container>
           <Eyebrow>How it works</Eyebrow>
           <h2 className="mt-3 max-w-2xl font-display text-3xl font-semibold sm:text-4xl">
-            Simple as it should be.
+            One token, one cut.
           </h2>
+          <p className="mt-3 max-w-xl text-steel">
+            Your membership runs on tokens. Each month you get one — the gold coin — and each token is
+            a full haircut. Here&apos;s the life of a single token, from the day it lands to the day you
+            use it (or pass it on).
+          </p>
           <div className="mt-10">
             <TokenExplainer />
           </div>
@@ -166,12 +174,12 @@ export default async function HomePage() {
               </p>
               <ul className="mt-4 space-y-2 text-sm text-paper/85">
                 {[
-                  "One full cut every month",
+                  "A token for a full cut, every month",
                   "Beard tidy included",
-                  "Book up to two weeks ahead",
+                  "Use it to book up to two weeks ahead",
                   "Your cut saved for next time",
                   "Same barber every appointment",
-                  "Unused cuts can be gifted",
+                  "Unused tokens roll over or can be gifted",
                   "No queues and no rushing",
                 ].map((line) => (
                   <li key={line} className="flex gap-2">
@@ -181,7 +189,8 @@ export default async function HomePage() {
                 ))}
               </ul>
               <p className="num mt-4 text-xs text-paper/60">
-                Each cut is yours for 60 days. Prefer a cut every few weeks? Choose how often yours comes when you join.
+                Each token is yours for 60 days. Prefer a cut every few weeks? Choose how often your
+                tokens come when you join.
               </p>
               <Button href="/join" className="mt-5 w-full">Join FSTR</Button>
             </Card>
