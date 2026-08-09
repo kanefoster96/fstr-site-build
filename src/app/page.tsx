@@ -13,40 +13,36 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-14 sm:pt-20">
-        <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="animate-fade-up">
-            <Eyebrow>North Tyneside · Members only</Eyebrow>
-            <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] sm:text-6xl">
-              One cut a month.
-              <br />
-              <span className="value">Never wasted.</span>
-            </h1>
-            <p className="mt-5 max-w-md text-lg text-steel">
-              Membership home barbering for people who work from home. A proper cut on a
-              quiet weekday lunchtime — while everyone else waits for Saturday.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button href="/join">Join — {gbp(seats.founding_rate)}/month</Button>
-              <Button href="/how-it-works" variant="ghost">
-                How the token works
-              </Button>
-            </div>
-            <p className="mt-6 flex items-center gap-2 text-sm">
-              <span className="inline-block h-2 w-2 rounded-full bg-brass" />
-              <span className="text-steel">Founding 50:</span>
-              <Num value className="font-semibold">
-                {seats.founding_left} seats left
-              </Num>
-            </p>
+      <section className="pt-10 sm:pt-14">
+        <Container className="flex flex-col items-center text-center animate-fade-up">
+          <div className="relative mb-8">
+            <Coin size={200} />
+            <div className="absolute -bottom-3 left-1/2 h-6 w-36 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
           </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
-              <Coin size={260} />
-              <div className="absolute -bottom-3 left-1/2 h-6 w-40 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
-            </div>
+          <Eyebrow>North Tyneside · Members only</Eyebrow>
+          <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] sm:text-6xl">
+            One cut a month.
+            <br />
+            <span className="value">Never wasted.</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-md text-lg text-steel">
+            Membership home barbering for people who work from home. A proper cut on a
+            quiet weekday lunchtime — while everyone else waits for Saturday.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button href="/join">Join — {gbp(seats.founding_rate)}/month</Button>
+            <Button href="/how-it-works" variant="ghost">
+              How the token works
+            </Button>
           </div>
+          <p className="mt-6 flex items-center justify-center gap-2 text-sm">
+            <span className="inline-block h-2 w-2 rounded-full bg-brass" />
+            <span className="text-steel">Founding 50:</span>
+            <Num value className="font-semibold">
+              {seats.founding_left} seats left
+            </Num>
+          </p>
         </Container>
       </section>
 
