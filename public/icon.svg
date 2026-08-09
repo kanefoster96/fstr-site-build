@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="f" cx="38%" cy="32%" r="80%">
+      <stop offset="0%" stop-color="#e7d29a"/>
+      <stop offset="42%" stop-color="#A98C4B"/>
+      <stop offset="100%" stop-color="#7d6832"/>
+    </radialGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="#FCFCFA"/>
+  <circle cx="60" cy="60" r="46" fill="url(#f)"/>
+  <text x="60" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="26" font-weight="700" fill="#3a3116">FSTR</text>
+</svg>

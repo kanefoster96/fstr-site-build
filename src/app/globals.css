@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  FSTR Cuts design tokens.
+  Fonts loaded via Fontshare (Clash Display, General Sans) and Google (JetBrains
+  Mono) with system fallbacks so the site still reads correctly offline.
+*/
+@import url("https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@400,500,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --paper: #fcfcfa; /* page background, warm white */
+  --ink: #111413; /* near-black text */
+  --steel: #8b9196; /* secondary text, hairlines, chrome */
+  --brass: #a98c4b; /* the token metal — value only */
+  --mist: #efefea; /* cards, wells, section breaks */
+
+  --brass-light: #c8ad70;
+  --brass-dark: #7d6832;
+
+  --font-display: "Clash Display", system-ui, sans-serif;
+  --font-body: "General Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --hairline: 1px solid color-mix(in srgb, var(--steel) 45%, transparent);
+}
+
+* {
+  border-color: color-mix(in srgb, var(--steel) 40%, transparent);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Every countable thing renders in mono like an engraving (§2 structural rule). */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Brass lives only where value lives. */
+.value {
+  color: var(--brass);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+.hairline {
+  border: 0;
+  border-top: var(--hairline);
+}
+
+/* Reduced-motion: the coin choreography stills to its resting frame. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brass) 30%, transparent);
+}
+
+/* Focus ring — steel by default, brass on value CTAs handled per-component. */
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
