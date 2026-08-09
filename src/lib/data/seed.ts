@@ -396,6 +396,17 @@ export function buildSeed(): DataStore {
     m.notes = "Card failed on the 1st — retry pending.";
   }
 
+  // Persona: an expired token that slipped through (all five states present).
+  {
+    const m = members[14];
+    const issued = addDays(NOW, -65);
+    const tok = mintToken(m.id, issued);
+    tok.issued_at = issued;
+    tok.expires_at = addDays(issued, 60);
+    tok.state = "EXPIRED";
+    logEvent(tok.id, "expired", "system", tok.expires_at);
+  }
+
   // Waitlist: a couple waiting.
   waitlist.push(
     { id: "wl_1", contact: "Aaron Dyer", email: "aaron.d@example.com", availability_profile: ["weekday_day"], created_at: addDays(NOW, -12), notified_at: null },
