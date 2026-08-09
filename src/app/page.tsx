@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Dock from "@/components/Dock";
-import CoinJourney from "@/components/CoinJourney";
+import Coin from "@/components/Coin";
 import TokenExplainer from "@/components/TokenExplainer";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSeatSummary } from "@/lib/data/queries";
@@ -14,13 +13,11 @@ export default async function HomePage() {
 
   return (
     <>
-      <CoinJourney />
-
       {/* Hero — lead with Adam's standards */}
       <section className="pt-10 sm:pt-14">
         <Container className="flex flex-col items-center text-center animate-fade-up">
           <div className="relative mb-3">
-            <Dock size={200} variant="gold" className="mx-auto" />
+            <Coin size={200} className="mx-auto" />
             <div className="absolute -bottom-3 left-1/2 h-6 w-36 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
           </div>
           <p className="mb-8 text-sm text-steel">
@@ -53,9 +50,7 @@ export default async function HomePage() {
       <section className="mt-24">
         <Container>
           <div className="grid items-center gap-8 rounded-3xl bg-mist p-6 sm:p-10 lg:grid-cols-2">
-            <div className="relative aspect-[4/3] rounded-2xl bg-[linear-gradient(135deg,#e7e5df,#d7d5cd)]" aria-hidden>
-              <Dock size={80} variant="gold" className="absolute bottom-4 left-4" />
-            </div>
+            <div className="aspect-[4/3] rounded-2xl bg-[linear-gradient(135deg,#e7e5df,#d7d5cd)]" aria-hidden />
             <div>
               <Eyebrow>The Chair</Eyebrow>
               <h2 className="mt-3 font-display text-3xl font-semibold">
@@ -105,7 +100,9 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="mt-6 flex items-center gap-3">
-              <Dock size={60} variant="avatar" />
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-mist font-display text-xl font-bold text-ink">
+                A
+              </span>
               <span className="font-display text-lg font-semibold">Adam</span>
             </div>
           </div>
@@ -134,7 +131,7 @@ export default async function HomePage() {
       <section className="mt-28">
         <Container>
           <div className="rounded-3xl border border-brass/40 bg-mist p-8 text-center sm:p-14">
-            <Dock size={64} variant="gold" className="mx-auto" />
+            <Coin size={64} className="mx-auto" />
             <Eyebrow>Your regular chair</Eyebrow>
             <p className="mx-auto mt-3 max-w-xl font-display text-2xl font-semibold sm:text-3xl">
               No explaining your haircut from scratch every month.
@@ -166,7 +163,7 @@ export default async function HomePage() {
               <Button href="/book" variant="ghost" className="mt-5 w-full">Book a one-off</Button>
             </Card>
             <Card className="!bg-ink text-paper">
-              <Dock size={56} variant="gold" className="mb-3" />
+              <Coin size={52} className="mb-3" />
               <p className="text-sm text-paper/70">Membership</p>
               <p className="mt-2">
                 <Num value className="text-4xl font-semibold">{gbp(seats.current_rate)}</Num>
@@ -241,7 +238,7 @@ export default async function HomePage() {
         <Container>
           <Hairline className="mb-10" />
           <div className="mx-auto max-w-2xl text-center">
-            <Dock size={72} variant="gold" className="mx-auto mb-4" />
+            <Coin size={72} className="mx-auto mb-4" />
             <h2 className="font-display text-3xl font-semibold sm:text-4xl">
               Ready for a barber who remembers your cut?
             </h2>
