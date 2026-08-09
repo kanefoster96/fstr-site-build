@@ -60,9 +60,9 @@ function defaultSettings(): Settings {
     day_end: "14:30",
     slot_length_mins: 45,
     slot_buffer_mins: 15,
-    base_open_days: [3, 4, 5], // Wed–Fri visible by default
-    reveal_order: [2, 1], // Tuesday, then Monday
+    fill_order: [5, 4, 3, 2, 1], // Fri→Mon; Friday is the anchor
     reveal_threshold: 0.85,
+    last_minute_days: 3,
     rules: {
       token_life_days: 60,
       max_held: 2,
@@ -416,48 +416,49 @@ export function buildSeed(): DataStore {
     logEvent(tok.id, "expired", "system", tok.expires_at);
   }
 
-  // Demand fill for the staged-opening demo: book the released, upcoming
-  // Wed–Fri slots to ~78% so members see "Wed–Fri 78% full — Tuesday opens at
-  // 85%". One more booking tips it over and Tuesday reveals live.
+  // Demand fill for the staged-opening demo. The week fills backwards from
+  // Friday, each day gating the previous at 85%. Seed Friday ~90% (so Thursday
+  // opens) and Thursday ~55% (so Wednesday stays "Unavailable"). Wed/Tue/Mon
+  // read as taken, except any last-minute slots within 3 days.
   {
     const nowMs = Date.parse(NOW);
-    const wtf = slots
-      .filter(
-        (s) =>
-          s.day_type === "weekday" &&
-          !s.booked &&
-          Date.parse(s.starts_at) > nowMs &&
-          Date.parse(s.release_at) <= nowMs &&
-          [3, 4, 5].includes(new Date(s.starts_at).getUTCDay()),
-      )
-      .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
-    // Total released Wed–Fri = booked-so-far (members[1]) + these; aim 78%.
-    const alreadyBooked = slots.filter(
-      (s) =>
-        s.day_type === "weekday" &&
-        s.booked &&
-        Date.parse(s.starts_at) > nowMs &&
-        Date.parse(s.release_at) <= nowMs &&
-        [3, 4, 5].includes(new Date(s.starts_at).getUTCDay()),
-    ).length;
-    const totalReleased = wtf.length + alreadyBooked;
-    const target = Math.floor(totalReleased * 0.78) - alreadyBooked;
-    for (let i = 0; i < Math.max(0, target); i++) {
-      const s = wtf[i];
-      const m = members[1 + ((i * 3 + 7) % SEATS)];
-      const tok = mintToken(m.id, addDays(NOW, -(2 + (i % 20))));
-      tok.state = "RESERVED";
-      tok.frozen_at = NOW;
-      tok.booking_id = `bk_${++bookingSeq}`;
-      logEvent(tok.id, "reserved", m.id, NOW);
-      logEvent(tok.id, "frozen", "system", NOW);
-      s.booked = true;
-      bookings.push({
-        id: tok.booking_id, member_id: m.id, token_id: tok.id, slot_id: s.id,
-        kind: "member", status: "confirmed", price_paid: 0,
-        created_via: i % 4 === 0 ? "chat" : "calendar", created_at: NOW, beard_addon: i % 5 === 0,
-      });
-    }
+    const releasedOn = (dow: number) =>
+      slots
+        .filter(
+          (s) =>
+            s.day_type === "weekday" &&
+            Date.parse(s.starts_at) > nowMs &&
+            Date.parse(s.release_at) <= nowMs &&
+            new Date(s.starts_at).getUTCDay() === dow,
+        )
+        .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
+
+    const fillDay = (dow: number, targetPct: number, seedOffset: number) => {
+      const daySlots = releasedOn(dow);
+      const total = daySlots.length;
+      const alreadyBooked = daySlots.filter((s) => s.booked).length;
+      const target = Math.round(total * targetPct) - alreadyBooked;
+      const free = daySlots.filter((s) => !s.booked);
+      for (let i = 0; i < Math.max(0, target) && i < free.length; i++) {
+        const s = free[i];
+        const m = members[1 + ((i * 3 + seedOffset) % SEATS)];
+        const tok = mintToken(m.id, addDays(NOW, -(2 + (i % 20))));
+        tok.state = "RESERVED";
+        tok.frozen_at = NOW;
+        tok.booking_id = `bk_${++bookingSeq}`;
+        logEvent(tok.id, "reserved", m.id, NOW);
+        logEvent(tok.id, "frozen", "system", NOW);
+        s.booked = true;
+        bookings.push({
+          id: tok.booking_id, member_id: m.id, token_id: tok.id, slot_id: s.id,
+          kind: "member", status: "confirmed", price_paid: 0,
+          created_via: i % 4 === 0 ? "chat" : "calendar", created_at: NOW, beard_addon: i % 5 === 0,
+        });
+      }
+    };
+
+    fillDay(5, 0.9, 7); // Friday ~90% → Thursday opens
+    fillDay(4, 0.55, 13); // Thursday ~55% → Wednesday stays unavailable
   }
 
   // Waitlist: a couple waiting.

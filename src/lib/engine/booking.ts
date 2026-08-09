@@ -3,7 +3,7 @@ import type { DataStore, Slot, Booking, Pence, CreatedVia } from "../types";
 import { reserveToken, cancelReservation, TokenError } from "./tokens";
 import { markGiftRedeemed } from "./gifts";
 import { hoursBetween } from "../format";
-import { revealedWeekdays, isWeekendDow } from "./schedule";
+import { revealedWeekdays, isLastMinute } from "./schedule";
 
 /** Booking rules (§5). */
 
@@ -13,8 +13,9 @@ function bookingId(): string {
 }
 
 /**
- * Weekday slots a member can see now: published, unbooked, released, upcoming,
- * and on a currently-revealed weekday (staged, demand-driven opening).
+ * Weekday slots a member can book now: published, unbooked, released, upcoming,
+ * and EITHER on a currently-open weekday (staged, backwards-from-Friday) OR
+ * within the last-minute window — so hidden days still get taken close-in.
  */
 export function memberVisibleSlots(db: DataStore): Slot[] {
   const now = Date.parse(db.clock.now);
@@ -27,7 +28,7 @@ export function memberVisibleSlots(db: DataStore): Slot[] {
         s.day_type === "weekday" &&
         Date.parse(s.starts_at) > now &&
         Date.parse(s.release_at) <= now &&
-        open.includes(new Date(s.starts_at).getUTCDay()),
+        (open.includes(new Date(s.starts_at).getUTCDay()) || isLastMinute(db, s.starts_at)),
     )
     .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
 }

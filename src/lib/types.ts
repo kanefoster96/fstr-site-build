@@ -230,11 +230,14 @@ export interface Settings {
   day_end: string; // "14:30" — chair closes (last slot ends by here)
   slot_length_mins: number; // 45
   slot_buffer_mins: number; // 15 end buffer → slots sit on the hour
-  // staged, demand-driven opening: reveal the next weekday once the open set
-  // crosses the threshold booked. base_open_days are always visible.
-  base_open_days: number[]; // [3,4,5] Wed–Fri
-  reveal_order: number[]; // [2,1] Tuesday then Monday
-  reveal_threshold: number; // 0.85
+  // Staged, demand-driven opening. The week fills backwards from Friday:
+  // fill_order lists weekdays latest→earliest. The first (Friday) is the
+  // anchor and always shows. Each earlier day appears only once the day after
+  // it is >= reveal_threshold booked. Hidden days read as "Unavailable".
+  fill_order: number[]; // [5,4,3,2,1] Fri→Mon
+  reveal_threshold: number; // 0.85 — per-day gate
+  // Hidden days still open up close-in, so last-minute bookers can grab them.
+  last_minute_days: number; // 3 — slots within this window are always bookable
   // rule numbers (all admin-editable, defaults as specced §13)
   rules: {
     token_life_days: number; // 60

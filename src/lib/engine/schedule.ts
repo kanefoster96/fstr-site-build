@@ -53,38 +53,73 @@ export function weekdayFillRate(db: DataStore, days: number[]): number {
   return booked / slots.length;
 }
 
-/** The weekdays currently revealed to members, demand-driven. */
+/** Fill fraction for a single weekday. */
+export function dayFillRate(db: DataStore, day: number): number {
+  return weekdayFillRate(db, [day]);
+}
+
+/**
+ * The weekdays currently open to members. The week fills backwards from Friday
+ * (the anchor, always shown): each earlier day appears only once the day after
+ * it is >= reveal_threshold booked.
+ */
 export function revealedWeekdays(db: DataStore): number[] {
-  const base = db.settings.base_open_days.filter((d) => db.settings.open_days.includes(d));
-  const revealed = [...base];
-  for (const day of db.settings.reveal_order) {
-    if (!db.settings.open_days.includes(day)) continue;
-    if (weekdayFillRate(db, revealed) >= db.settings.reveal_threshold) {
-      revealed.push(day);
+  const order = db.settings.fill_order.filter((d) => db.settings.open_days.includes(d));
+  if (order.length === 0) return [];
+  const revealed = [order[0]]; // Friday anchor
+  for (let i = 1; i < order.length; i++) {
+    const later = order[i - 1];
+    if (dayFillRate(db, later) >= db.settings.reveal_threshold) {
+      revealed.push(order[i]);
     } else {
       break;
     }
   }
-  return [...new Set(revealed)].sort((a, b) => a - b);
+  return revealed.sort((a, b) => a - b);
+}
+
+/** A slot close enough to now that last-minute bookers can always take it. */
+export function isLastMinute(db: DataStore, startsAt: string): boolean {
+  const delta = Date.parse(startsAt) - Date.parse(db.clock.now);
+  return delta >= 0 && delta <= db.settings.last_minute_days * 864e5;
+}
+
+export type DayStatus = "open" | "last_minute" | "unavailable";
+
+/** Member-facing status for a weekday: open, quietly last-minute, or taken. */
+export function weekdayStatus(db: DataStore, day: number): DayStatus {
+  if (revealedWeekdays(db).includes(day)) return "open";
+  const now = Date.parse(db.clock.now);
+  const hasLastMinute = db.slots.some(
+    (s) =>
+      s.day_type === "weekday" &&
+      !s.booked &&
+      new Date(s.starts_at).getUTCDay() === day &&
+      Date.parse(s.starts_at) > now &&
+      Date.parse(s.release_at) <= now &&
+      isLastMinute(db, s.starts_at),
+  );
+  return hasLastMinute ? "last_minute" : "unavailable";
 }
 
 export interface RevealState {
-  revealed: number[]; // e.g. [3,4,5] or [2,3,4,5]
-  nextDay: number | null; // the day waiting to unlock, or null if full
-  fill: number; // current fill of the revealed set (0..1)
+  revealed: number[]; // open weekdays, e.g. [4,5] or [1,2,3,4,5]
+  nextDay: number | null; // the earlier day not yet open (barber view only)
+  nextDayGateFill: number; // fill of the day that gates nextDay (0..1)
   threshold: number;
 }
 
-/** For UI: what's open, what's next, and how close it is to unlocking. */
+/** For the barber diary: what's open and what gates the next earlier day. */
 export function getRevealState(db: DataStore): RevealState {
   const revealed = revealedWeekdays(db);
-  const remaining = db.settings.reveal_order.filter(
-    (d) => db.settings.open_days.includes(d) && !revealed.includes(d),
-  );
+  const order = db.settings.fill_order.filter((d) => db.settings.open_days.includes(d));
+  const nextIdx = revealed.length; // index into order of the next earlier day
+  const nextDay = nextIdx < order.length ? order[nextIdx] : null;
+  const gateDay = nextDay != null ? order[nextIdx - 1] : null;
   return {
     revealed,
-    nextDay: remaining[0] ?? null,
-    fill: weekdayFillRate(db, revealed),
+    nextDay,
+    nextDayGateFill: gateDay != null ? dayFillRate(db, gateDay) : 0,
     threshold: db.settings.reveal_threshold,
   };
 }

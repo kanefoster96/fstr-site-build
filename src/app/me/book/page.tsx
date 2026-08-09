@@ -3,7 +3,7 @@ import { Container, Button, Num, Eyebrow } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/data/db";
 import { memberVisibleSlots, weekendVisibleSlots } from "@/lib/engine/booking";
-import { getRevealState, DOW_LONG } from "@/lib/engine/schedule";
+import { weekdayStatus, DOW_SHORT } from "@/lib/engine/schedule";
 import { getWallet } from "@/lib/data/member";
 import { fmtDay, fmtTime, gbp } from "@/lib/format";
 import { bookSlotAction, bookWeekendUpgradeAction, bookWeekendPaidAction } from "./actions";
@@ -30,8 +30,7 @@ export default async function MemberBookPage({
   const available = wallet.tokens.filter((t) => t.state === "ISSUED").length;
   const slots = memberVisibleSlots(db);
   const weekend = weekendVisibleSlots(db);
-  const reveal = getRevealState(db);
-  const fillPct = Math.round(reveal.fill * 100);
+  const weekStatus = [1, 2, 3, 4, 5].map((d) => ({ d, status: weekdayStatus(db, d) }));
 
   const byDay = new Map<string, typeof slots>();
   for (const s of slots) {
@@ -51,29 +50,33 @@ export default async function MemberBookPage({
         </span>
       </div>
 
-      {/* Staged-opening status */}
-      {reveal.nextDay != null && (
-        <div className="mt-5 rounded-2xl bg-mist p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-steel">
-              {reveal.revealed.map((d) => DOW_LONG[d]).join(", ")} open
-            </span>
-            <span className="num">
-              <span className="value">{fillPct}%</span> full · {DOW_LONG[reveal.nextDay]} opens at {Math.round(reveal.threshold * 100)}%
-            </span>
+      {/* This week's availability — hidden days simply read as unavailable */}
+      <div className="mt-5 grid grid-cols-6 gap-1.5">
+        {weekStatus.map(({ d, status }) => (
+          <div
+            key={d}
+            className={`rounded-lg px-1 py-2.5 text-center ${
+              status === "open"
+                ? "bg-mist"
+                : status === "last_minute"
+                  ? "border border-brass/40"
+                  : "border border-steel/15 bg-paper text-steel/60"
+            }`}
+          >
+            <p className="num text-[11px] text-steel">{DOW_SHORT[d]}</p>
+            <p className="num mt-0.5 text-[10px]">
+              {status === "open" ? "Open" : status === "last_minute" ? "Last-min" : "Full"}
+            </p>
           </div>
-          <div className="mt-2 h-2 rounded-full bg-paper">
-            <div
-              className="h-2 rounded-full bg-brass transition-all"
-              style={{ width: `${Math.min(100, (fillPct / (reveal.threshold * 100)) * 100)}%` }}
-            />
-          </div>
-          <p className="mt-2 text-xs text-steel">
-            We open days as demand grows, so every day stays calm. {DOW_LONG[reveal.nextDay]} unlocks
-            once these fill up.
-          </p>
+        ))}
+        <div className="rounded-lg border border-brass/40 px-1 py-2.5 text-center">
+          <p className="num text-[11px] text-steel">Sat</p>
+          <p className="num mt-0.5 text-[10px] value">Priority</p>
         </div>
-      )}
+      </div>
+      <p className="mt-2 text-xs text-steel">
+        Quieter days open up nearer the time — check back for last-minute slots.
+      </p>
 
       {sp.error?.startsWith("no-token") && (
         <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">

@@ -19,7 +19,7 @@ export default async function DiaryPage() {
   const s = db.settings;
   const reveal = getRevealState(db);
   const times = slotStartTimes(db);
-  const fillPct = Math.round(reveal.fill * 100);
+  const gateFillPct = Math.round(reveal.nextDayGateFill * 100);
 
   return (
     <Container className="py-12">
@@ -31,24 +31,26 @@ export default async function DiaryPage() {
         <AdminNav />
       </div>
 
-      {/* Staged opening status */}
+      {/* Staged opening status — the week fills backwards from Friday */}
       <div className="mt-6 rounded-2xl border border-brass/40 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-medium">Staged opening</p>
+          <p className="text-sm font-medium">Staged opening · fills Fri → Mon</p>
           <p className="num text-sm text-steel">
             {s.day_start}–{s.day_end} · {times.length} slots/day · {times.join("  ")}
           </p>
         </div>
         <p className="num mt-2 text-sm">
-          Open now: <span className="value">{reveal.revealed.map((d) => DOW_LONG[d]).join(", ")}</span>
+          Open to members: <span className="value">{reveal.revealed.map((d) => DOW_LONG[d]).join(", ")}</span>
         </p>
         {reveal.nextDay != null ? (
           <>
             <div className="mt-2 h-2 rounded-full bg-mist">
-              <div className="h-2 rounded-full bg-brass" style={{ width: `${Math.min(100, (fillPct / (reveal.threshold * 100)) * 100)}%` }} />
+              <div className="h-2 rounded-full bg-brass" style={{ width: `${Math.min(100, (gateFillPct / (reveal.threshold * 100)) * 100)}%` }} />
             </div>
             <p className="num mt-2 text-xs text-steel">
-              {fillPct}% full — {DOW_LONG[reveal.nextDay]} unlocks at {Math.round(reveal.threshold * 100)}%.
+              {DOW_LONG[reveal.revealed[0]]} {gateFillPct}% full — {DOW_LONG[reveal.nextDay]} opens to members at{" "}
+              {Math.round(reveal.threshold * 100)}%. Until then it reads as unavailable, but last-minute
+              bookers can still take it within {s.last_minute_days} days.
             </p>
           </>
         ) : (
