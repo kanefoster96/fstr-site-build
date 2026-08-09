@@ -9,9 +9,9 @@ const DOCS: Record<string, { title: string; body: string[] }> = {
     title: "Terms of membership",
     body: [
       "These terms are a template and must be reviewed by a solicitor before launch.",
-      "Membership is £25–£30/month depending on your seat band, locked for as long as you remain continuously subscribed. Each billing payment mints one token, valid for 60 days from issue.",
+      "Membership is priced by cadence — from £20 to £30 per cut depending on how often you choose to be billed (every 2 to 6 weeks), locked for as long as you remain continuously subscribed. Each billing payment mints one token, valid for two billing cycles from issue.",
       "Tokens may be used for one cut (beard tidy included) or gifted. Tokens have no cash value and cannot be exchanged for products or refunds.",
-      "A maximum of two tokens may be held at once. Bookings freeze a token's expiry. Cancellations 24+ hours before a slot return the token; later cancellations or no-shows forfeit it.",
+      "A maximum of five tokens may be held at once (two active, three stored). Bookings freeze a token's expiry. Cancellations 24+ hours before a slot return the token; later cancellations or no-shows forfeit it.",
       "FSTR Cuts operates from a private residence. The address is shared only with confirmed bookings, 24 hours in advance.",
     ],
   },

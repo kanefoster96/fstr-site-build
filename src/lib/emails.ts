@@ -29,11 +29,11 @@ const mono = (s: string) =>
 export function welcomeEmail(name: string, seat: number, rate: Pence): MailTemplate {
   return {
     subject: "Welcome to FSTR — your seat is yours",
-    preview: `Seat ${seat} locked at ${gbp(rate)}/month.`,
+    preview: `Seat ${seat} locked at ${gbp(rate)} a cut.`,
     html: shell(
       `Welcome, ${name.split(" ")[0]}.`,
-      `<p>You're in. Seat ${mono(String(seat))} is yours, locked at ${mono(gbp(rate))} a month for as long as you stay subscribed.</p>
-       <p>Your first token drops on your billing day — one cut, beard tidy included, 60 days to use it. It rolls over, and you can gift it to a mate. You never lose a cut you've paid for.</p>`,
+      `<p>You're in. Seat ${mono(String(seat))} is yours, locked at ${mono(gbp(rate))} a cut for as long as you stay subscribed.</p>
+       <p>Your first token drops on your billing day — one cut, beard tidy included, two billing cycles to use it. It rolls over, and you can gift it to a mate. You never lose a cut you've paid for.</p>`,
       { label: "Open your wallet", href: "/me" },
     ),
   };
@@ -42,7 +42,7 @@ export function welcomeEmail(name: string, seat: number, rate: Pence): MailTempl
 export function tokenMintedEmail(name: string, monthLabel: string, availableCount: number): MailTemplate {
   return {
     subject: `Your ${monthLabel} cut is ready`,
-    preview: `One token, 60 days. ${availableCount} slots open now.`,
+    preview: `One token, two cycles to use it. ${availableCount} slots open now.`,
     html: shell(
       `Your ${monthLabel} cut is ready`,
       `<p>A fresh token just landed in your wallet, ${name.split(" ")[0]}. ${mono(String(availableCount))} weekday slots are open right now.</p>
@@ -158,10 +158,10 @@ export function paymentFailedEmail(name: string, retryDay: number, prebookAtRisk
 export function waitlistSeatEmail(name: string, rate: Pence): MailTemplate {
   return {
     subject: "A seat's opened — 48 hours to claim",
-    preview: `${gbp(rate)}/month. First come, first served.`,
+    preview: `From ${gbp(rate)} a cut. First come, first served.`,
     html: shell(
       "A seat's opened up",
-      `<p>You're next on the list. A seat's free at ${mono(gbp(rate))} a month — it's yours if you claim it in the next ${mono("48")} hours.</p>`,
+      `<p>You're next on the list. A seat's free — from ${mono(gbp(rate))} a cut, priced by how often you come — and it's yours if you claim it in the next ${mono("48")} hours.</p>`,
       { label: "Claim my seat", href: "/join" },
     ),
   };
@@ -170,10 +170,10 @@ export function waitlistSeatEmail(name: string, rate: Pence): MailTemplate {
 export function oneOffFollowUpEmail(rate: Pence): MailTemplate {
   return {
     subject: "Enjoyed it? Here's the members' deal",
-    preview: `${gbp(rate)}/month gets you this every month.`,
+    preview: `Cuts from ${gbp(rate)} as a member.`,
     html: shell(
-      "Fancy this every month?",
-      `<p>Hope the cut sorted you out. ${mono(gbp(rate))} a month gets you one every month — rolls over, giftable, never wasted. And you'd get first look at every slot.</p>`,
+      "Fancy this regularly?",
+      `<p>Hope the cut sorted you out. Membership starts at ${mono(gbp(rate))} a cut — priced by how often you come, rolls over, giftable, never wasted. And you'd get first look at every slot.</p>`,
       { label: "See membership", href: "/join" },
     ),
   };

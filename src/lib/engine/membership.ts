@@ -10,6 +10,19 @@ export function priceForSeat(db: DataStore, seat: number): Pence {
   return band?.price ?? db.settings.current_rate;
 }
 
+/** Price for a cadence (§6): one cut per cycle, priced by how often you come. */
+export function planPrice(db: DataStore, weeks: number): Pence {
+  return db.settings.plan_prices.find((p) => p.weeks === weeks)?.price ?? db.settings.current_rate;
+}
+
+/** The marketing "from" price — the cheapest plan per cut. */
+export function fromPrice(db: DataStore): Pence {
+  return db.settings.plan_prices.reduce(
+    (min, p) => Math.min(min, p.price),
+    db.settings.current_rate,
+  );
+}
+
 export function seatsFilled(db: DataStore): number {
   return db.members.filter(
     (m) => m.role === "member" && m.seat_number != null && (m.status === "active" || m.status === "paused"),
@@ -56,7 +69,8 @@ export interface JoinResult {
 export function join(db: DataStore, input: JoinInput): JoinResult | null {
   const seat = nextFreeSeat(db);
   if (seat == null) return null;
-  const rate = priceForSeat(db, seat);
+  const cycle = input.cycleWeeks ?? db.settings.default_cycle_weeks;
+  const rate = planPrice(db, cycle); // price set by cadence, not seat
   const id = `mem_${seat}_${Date.now().toString(36)}`;
   const member: Member = {
     id,
@@ -74,7 +88,6 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
     streak_months: 0,
     badges: seat <= 50 ? ["Founding Member"] : [],
   };
-  const cycle = input.cycleWeeks ?? db.settings.default_cycle_weeks;
   const subscription: Subscription = {
     id: `sub_${id}`,
     member_id: id,
@@ -165,8 +178,8 @@ export function upgradeToMembership(
   }
   const seat = nextFreeSeat(db);
   if (seat == null) return null;
-  const rate = priceForSeat(db, seat);
   const cycle = cycleWeeks ?? db.settings.default_cycle_weeks;
+  const rate = planPrice(db, cycle); // price set by cadence, not seat
   m.seat_number = seat;
   if (seat <= 50 && !(m.badges ?? []).includes("Founding Member")) {
     m.badges = [...(m.badges ?? []), "Founding Member"];
@@ -230,6 +243,7 @@ export function changePlan(db: DataStore, memberId: string, cycleWeeks: number):
   }
   if (cycleWeeks === sub.cycle_weeks) return sub;
   sub.cycle_weeks = cycleWeeks;
+  sub.price_locked = planPrice(db, cycleWeeks); // re-price to the new cadence
   sub.plan_locked_until_next_billing = true;
   const base = sub.last_billing_at ?? db.clock.now;
   const next = addDays(base, cycleWeeks * 7);

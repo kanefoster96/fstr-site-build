@@ -2,6 +2,7 @@ import Coin from "@/components/Coin";
 import { Container, Button, Num, Eyebrow, Card } from "@/components/ui";
 import { getDb } from "@/lib/data/db";
 import { oneOffVisibleSlots } from "@/lib/engine/booking";
+import { fromPrice } from "@/lib/engine/membership";
 import { fmtDay, fmtTime, gbp } from "@/lib/format";
 import { bookOneOffAction } from "./actions";
 
@@ -24,7 +25,7 @@ export default async function OneOffBookPage({
         <p className="mx-auto mt-3 max-w-sm text-steel">
           Paid and confirmed. Address and parking notes land 24 hours before — Wallsend area.
         </p>
-        <p className="mt-6 num text-sm text-steel">Fancy this every month? Membership is {gbp(db.settings.current_rate)}.</p>
+        <p className="mt-6 num text-sm text-steel">Get this regularly? Membership works out cheaper — cuts from {gbp(fromPrice(db))}.</p>
         <Button href="/join" className="mt-3">See membership</Button>
       </Container>
     );
@@ -38,7 +39,7 @@ export default async function OneOffBookPage({
       </h1>
       <p className="mt-2 max-w-md text-steel">
         No membership needed. One-off slots open up to a week ahead — members always get first
-        look. Fancy it monthly? It works out cheaper as a member.
+        look. Get cuts regularly? It works out cheaper as a member.
       </p>
 
       {sp.error && (

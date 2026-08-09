@@ -8,6 +8,7 @@ import {
   join,
   createGuestAccount,
   grantTrialCredit,
+  fromPrice,
 } from "@/lib/engine/membership";
 import { invoicePaid } from "@/lib/adapters/payments";
 import { bookWithToken } from "@/lib/engine/booking";
@@ -91,7 +92,7 @@ export async function completeOneOff(data: OnboardData) {
     // Credit = the extra a one-off costs over a cycle, applied if they join today.
     const credit = Math.max(0, db.settings.oneoff_price - db.settings.current_rate);
     grantTrialCredit(db, member.id, credit);
-    sendMail(db, "oneoff_followup", data.email, oneOffFollowUpEmail(db.settings.current_rate));
+    sendMail(db, "oneoff_followup", data.email, oneOffFollowUpEmail(fromPrice(db)));
     return member.id;
   });
 

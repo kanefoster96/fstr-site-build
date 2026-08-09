@@ -49,7 +49,14 @@ function defaultSettings(): Settings {
       { from_seat: 51, to_seat: 100, price: BAND_2, label: "Second 50", note: "£25, reviewed annually" },
       { from_seat: 101, to_seat: 130, price: BAND_3, label: "Final 30", note: "£30" },
     ],
-    current_rate: FOUNDING_50, // all plans £25 per cycle for now
+    plan_prices: [
+      { weeks: 2, price: 2000 }, // £20 — £10.00/wk
+      { weeks: 3, price: 2250 }, // £22.50 — £7.50/wk
+      { weeks: 4, price: 2500 }, // £25 — £6.25/wk
+      { weeks: 5, price: 2750 }, // £27.50 — £5.50/wk
+      { weeks: 6, price: 3000 }, // £30 — £5.00/wk
+    ],
+    current_rate: 2500, // 4-week reference price
     waitlist_price: 3500,
     total_seats: 130,
     weekday_daily_cap: 5,
@@ -67,10 +74,11 @@ function defaultSettings(): Settings {
     default_cycle_weeks: 4,
     rules: {
       token_life_days: 60,
+      token_cycles_life: 2,
       max_held: 5,
       active_display: 2,
       store_cap: 3,
-      plan_prompt_threshold: 3,
+      plan_prompt_threshold: 5,
       gift_life_days: 14,
       cancel_cutoff_hours: 24,
       cancel_extend_days: 7,

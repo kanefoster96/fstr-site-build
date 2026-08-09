@@ -51,7 +51,19 @@ export function heldCount(db: DataStore, memberId: string): number {
 
 let mintCounter = 0;
 
-/** §4.1 — mint exactly one token, 60-day life from issue. */
+/** How long a freshly-minted token lasts: two billing cycles at the member's
+ *  cadence (§4.1, revised). Guests with no subscription fall back to the default
+ *  cadence, then the flat token_life_days if even that's missing. */
+export function tokenLifeDays(db: DataStore, memberId: string): number {
+  const sub = db.subscriptions.find(
+    (s) => s.member_id === memberId && s.status !== "cancelled",
+  );
+  const cycleWeeks = sub?.cycle_weeks ?? db.settings.default_cycle_weeks;
+  const cycles = db.settings.rules.token_cycles_life ?? 2;
+  return cycleWeeks && cycles ? cycleWeeks * 7 * cycles : db.settings.rules.token_life_days;
+}
+
+/** §4.1 — mint exactly one token, lasting two billing cycles from issue. */
 export function mintToken(
   db: DataStore,
   memberId: string,
@@ -63,7 +75,7 @@ export function mintToken(
     member_id: memberId,
     state: "ISSUED",
     issued_at: db.clock.now,
-    expires_at: addDays(db.clock.now, db.settings.rules.token_life_days),
+    expires_at: addDays(db.clock.now, tokenLifeDays(db, memberId)),
     frozen_at: null,
     booking_id: null,
     gift_id: null,

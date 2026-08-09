@@ -227,10 +227,21 @@ export interface PricingBand {
   note?: string;
 }
 
+/** Per-cadence pricing: the shorter the gap between cuts, the lower the price
+ *  per cut. One cut per billing cycle, beard tidy included. */
+export interface PlanPrice {
+  weeks: number;
+  price: Pence;
+}
+
 export interface Settings {
   // pricing ladder (§6)
   pricing_ladder: PricingBand[];
-  current_rate: Pence; // rate a brand-new joiner pays now
+  // Price per cadence (§6, revised). The price a member pays each cycle is set
+  // by how often they get a cut, not by seat. `current_rate` is the 4-week
+  // default / reference; the marketing "from" price is the cheapest plan.
+  plan_prices: PlanPrice[];
+  current_rate: Pence; // reference rate (4-week default)
   waitlist_price: Pence;
   // caps
   total_seats: number; // 130
@@ -257,11 +268,12 @@ export interface Settings {
   default_cycle_weeks: number; // 4
   // rule numbers (all admin-editable, defaults as specced §13)
   rules: {
-    token_life_days: number; // 60
+    token_life_days: number; // fallback life for tokens with no billing cycle
+    token_cycles_life: number; // 2 — a token lasts this many billing cycles
     max_held: number; // 5 total (2 active + up to 3 stored)
     active_display: number; // 2 — shown prominently as "active"
     store_cap: number; // 3 — additional "stored" tokens allowed
-    plan_prompt_threshold: number; // 3 — nudge to slow cadence at/above this held
+    plan_prompt_threshold: number; // 5 — nudge to slow cadence at/above this held
     gift_life_days: number; // 14
     cancel_cutoff_hours: number; // 24
     cancel_extend_days: number; // 7

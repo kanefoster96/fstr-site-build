@@ -1,25 +1,32 @@
 import { changePlanAction } from "@/app/me/actions";
+import { gbp } from "@/lib/format";
+
+type PlanPrice = { weeks: number; price: number };
 
 /**
- * Cadence picker: a token every N weeks. Change once per billing cycle.
- * Same locked price per token — cadence just sets how often one drops.
+ * Cadence picker: a token every N weeks, priced by how often you come. Longer
+ * gaps cost more per cut but less per week. Change once per billing cycle.
  */
 export default function PlanPicker({
   plans,
+  planPrices,
   current,
   locked,
   from = "me",
 }: {
   plans: number[];
+  planPrices: PlanPrice[];
   current: number;
   locked: boolean;
   from?: "me" | "profile";
 }) {
+  const priceFor = (w: number) => planPrices.find((p) => p.weeks === w)?.price;
   return (
     <div>
       <div className="flex flex-wrap gap-2">
         {plans.map((w) => {
           const isCurrent = w === current;
+          const price = priceFor(w);
           return (
             <form key={w} action={changePlanAction}>
               <input type="hidden" name="cycle_weeks" value={w} />
@@ -35,7 +42,7 @@ export default function PlanPicker({
                       : "border border-steel/50 text-ink hover:border-ink hover:bg-mist"
                 }`}
               >
-                {w} wk
+                {w} wk{price != null ? ` · ${gbp(price)}` : ""}
               </button>
             </form>
           );
@@ -44,7 +51,7 @@ export default function PlanPicker({
       <p className="num mt-2 text-[11px] text-steel">
         {locked
           ? "One change per cycle — you can switch again after your next token."
-          : "A token every " + current + " weeks. Change once per cycle."}
+          : `A token every ${current} weeks. A longer gap costs a little more per cut. Change once per cycle.`}
       </p>
     </div>
   );

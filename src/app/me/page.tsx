@@ -118,8 +118,8 @@ export default async function WalletPage({
             <div className="flex-1">
               <p className="font-display text-xl font-semibold">Become a member</p>
               <p className="mt-1 text-sm text-steel">
-                {gbp(wallet.currentRate)} per token — a cut a month that never goes to waste, first look at
-                every slot, and you can gift them.
+                {gbp(wallet.joinRate)} for a cut every {wallet.cycleWeeks} weeks — a token that never goes to
+                waste, first look at every slot, and you can gift them.
                 {wallet.trialCreditValid && (
                   <>
                     {" "}
@@ -131,7 +131,7 @@ export default async function WalletPage({
               <form action={upgradeMembershipAction} className="mt-4">
                 <input type="hidden" name="cycle_weeks" value={session.member.cut_frequency_weeks ?? 4} />
                 <button className="rounded-full bg-brass px-6 py-2.5 text-sm font-medium text-ink">
-                  Join — {gbp(wallet.trialCreditValid ? Math.max(0, wallet.currentRate - wallet.trialCredit) : wallet.currentRate)} now
+                  Join — {gbp(wallet.trialCreditValid ? Math.max(0, wallet.joinRate - wallet.trialCredit) : wallet.joinRate)} now
                 </button>
               </form>
             </div>
@@ -216,11 +216,11 @@ export default async function WalletPage({
               </p>
               <p className="mt-1 text-sm text-steel">
                 {wallet.atCap
-                  ? `You're holding ${wallet.maxHeld}. Nothing's charged until you've room. Slow to a longer plan so tokens don't pile up — or gift a couple to mates.`
-                  : `You've ${issued.length + gifted.length} on the go. If cuts are less frequent, stretch your plan so a token drops less often — you'll never waste one.`}
+                  ? `You're holding all ${wallet.maxHeld}. Nothing's charged until you've room. Increase the time between cuts so tokens don't pile up — a longer plan saves you money — or gift a couple to mates.`
+                  : `You've ${issued.length + gifted.length} on the go. If you're cutting less often, increase the time between cuts — a token drops less often and you'll save money without ever wasting one.`}
               </p>
               <div className="mt-3">
-                <PlanPicker plans={wallet.plans} current={wallet.cycleWeeks} locked={wallet.planLocked} from="me" />
+                <PlanPicker plans={wallet.plans} planPrices={wallet.planPrices} current={wallet.cycleWeeks} locked={wallet.planLocked} from="me" />
               </div>
             </div>
           )}

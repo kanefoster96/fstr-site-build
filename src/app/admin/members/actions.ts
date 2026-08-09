@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { mutate } from "@/lib/data/db";
 import { addDays } from "@/lib/format";
+import { fromPrice } from "@/lib/engine/membership";
 import { sendMail } from "@/lib/adapters/mail";
 import { waitlistSeatEmail } from "@/lib/emails";
 
@@ -14,7 +15,7 @@ export async function notifyWaitlistAction(formData: FormData) {
     if (!w) return;
     w.notified_at = db.clock.now;
     w.claim_deadline = addDays(db.clock.now, 2); // 48h
-    if (w.email) sendMail(db, "waitlist_seat", w.email, waitlistSeatEmail(w.contact, db.settings.waitlist_price));
+    if (w.email) sendMail(db, "waitlist_seat", w.email, waitlistSeatEmail(w.contact, fromPrice(db)));
   });
   revalidatePath("/admin/members");
   revalidatePath("/dev/mail");

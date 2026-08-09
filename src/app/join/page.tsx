@@ -55,7 +55,7 @@ export default async function JoinPage({
         slots={slots}
         rate={seats.current_rate}
         oneOffPrice={settings.oneoff_price}
-        plans={settings.plans}
+        planPrices={settings.plan_prices}
         foundingLeft={seats.founding_left}
       />
     </Container>

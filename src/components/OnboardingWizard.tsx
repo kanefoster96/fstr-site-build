@@ -7,24 +7,28 @@ import { gbp } from "@/lib/format";
 import { completeMembership, completeOneOff, completeSkip, type OnboardData } from "@/app/join/actions";
 
 type SlotOption = { id: string; day: string; time: string };
+type PlanPrice = { weeks: number; price: number };
 
-const FREQS = [
-  { label: "Every 2 weeks", weeks: 2, sub: "Tight & sharp" },
-  { label: "Every 3 weeks", weeks: 3, sub: "" },
-  { label: "Every 4 weeks", weeks: 4, sub: "Most common" },
-  { label: "Every 6 weeks", weeks: 6, sub: "Low-key" },
-];
+// Short tag per cadence — the price itself comes from planPrices.
+const FREQ_SUBS: Record<number, string> = {
+  2: "Tight & sharp",
+  3: "",
+  4: "Most common",
+  5: "",
+  6: "Low-key",
+};
 
 export default function OnboardingWizard({
   slots,
   rate,
   oneOffPrice,
+  planPrices,
   foundingLeft,
 }: {
   slots: SlotOption[];
   rate: number;
   oneOffPrice: number;
-  plans?: number[];
+  planPrices: PlanPrice[];
   foundingLeft: number;
 }) {
   const [step, setStep] = useState(0);
@@ -47,7 +51,7 @@ export default function OnboardingWizard({
     email: email.trim(),
     avatarUrl: avatar,
     frequencyWeeks: frequency,
-    planWeeks: frequency, // frequency sets the plan; every plan is the same price
+    planWeeks: frequency, // frequency sets the plan — and the price
     usualCut: "",
     slotId,
   };
@@ -62,7 +66,9 @@ export default function OnboardingWizard({
 
   const go = (fn: (d: OnboardData) => Promise<void>) => start(() => fn(data));
   const selectedSlot = slots.find((s) => s.id === slotId);
-  const payAmount = plan === "oneoff" ? oneOffPrice : rate;
+  const priceFor = (weeks: number) => planPrices.find((p) => p.weeks === weeks)?.price ?? rate;
+  const membershipPrice = priceFor(frequency);
+  const payAmount = plan === "oneoff" ? oneOffPrice : membershipPrice;
 
   // Simulate the checkout, then drop a token into the header wallet.
   function pay() {
@@ -120,27 +126,34 @@ export default function OnboardingWizard({
           </Step>
         )}
 
-        {/* Step 1 — cut frequency */}
+        {/* Step 1 — cut frequency (this also sets the price) */}
         {step === 1 && (
-          <Step title="How often do you get a cut?" blurb="This sets how often a token lands — you can change it any time.">
+          <Step title="How often do you get a cut?" blurb="This sets your plan and your price — one cut per cycle, beard tidy included. Change it any time.">
             <div className="grid grid-cols-2 gap-2">
-              {FREQS.map((f) => (
-                <button
-                  key={f.weeks}
-                  type="button"
-                  onClick={() => setFrequency(f.weeks)}
-                  className={`rounded-xl border p-4 text-left ${
-                    frequency === f.weeks ? "border-brass bg-mist" : "border-steel/30"
-                  }`}
-                >
-                  <span className="block text-sm font-medium">{f.label}</span>
-                  {f.sub && <span className="num block text-[11px] text-steel">{f.sub}</span>}
-                </button>
-              ))}
+              {planPrices.map((p) => {
+                const perWeek = p.price / p.weeks;
+                const sub = FREQ_SUBS[p.weeks];
+                return (
+                  <button
+                    key={p.weeks}
+                    type="button"
+                    onClick={() => setFrequency(p.weeks)}
+                    className={`rounded-xl border p-4 text-left ${
+                      frequency === p.weeks ? "border-brass bg-mist" : "border-steel/30"
+                    }`}
+                  >
+                    <span className="block text-sm font-medium">Every {p.weeks} weeks</span>
+                    <span className="num block text-[13px] value">{gbp(p.price)}</span>
+                    <span className="num block text-[11px] text-steel">
+                      {gbp(perWeek)}/wk{sub ? ` · ${sub}` : ""}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <p className="num text-[11px] text-steel">
-              Every plan is <span className="value">{gbp(rate)}</span> a token — the pace just sets how
-              often one drops.
+              More often is cheaper per cut — <span className="value">{gbp(membershipPrice)}</span> for a cut
+              every {frequency} weeks.
             </p>
           </Step>
         )}
@@ -197,7 +210,7 @@ export default function OnboardingWizard({
             >
               <span className="flex items-center justify-between">
                 <span className="font-medium">Membership</span>
-                <span className="num">{gbp(rate)}/cycle</span>
+                <span className="num">{gbp(membershipPrice)}/cycle</span>
               </span>
               <span className="mt-0.5 block text-sm text-steel">
                 A token every {frequency} weeks — keep the chair, save on every cut.
@@ -218,7 +231,7 @@ export default function OnboardingWizard({
               </span>
               <span className="mt-0.5 block text-sm text-steel">
                 A single token, no commitment. Join on the day and we knock{" "}
-                {gbp(oneOffPrice - rate)} off your first membership token.
+                {gbp(oneOffPrice - membershipPrice)} off your first membership token.
               </span>
             </button>
 
@@ -263,7 +276,7 @@ export default function OnboardingWizard({
             <div className="flex flex-col items-center gap-3 py-2">
               <Coin size={92} className="animate-coin-drop" />
               <p className="num text-[11px] text-steel">
-                {plan === "oneoff" ? gbp(oneOffPrice) : gbp(rate)} paid · 1 token earned
+                {gbp(payAmount)} paid · 1 token earned
               </p>
             </div>
 

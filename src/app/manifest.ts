@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "FSTR Cuts",
     short_name: "FSTR",
-    description: "One cut a month, never wasted. Membership home barbering.",
+    description: "One cut per cycle, never wasted. Membership home barbering.",
     start_url: "/",
     display: "standalone",
     background_color: "#FCFCFA",

@@ -3,7 +3,8 @@ import { Container, Button, Num, Eyebrow, Card } from "@/components/ui";
 import { getDb, mutate } from "@/lib/data/db";
 import { findGiftByCode, openGift } from "@/lib/engine/gifts";
 import { memberVisibleSlots } from "@/lib/engine/booking";
-import { fmtDay, fmtTime, fmtMonthDay, daysLeftLabel } from "@/lib/format";
+import { fromPrice } from "@/lib/engine/membership";
+import { fmtDay, fmtTime, fmtMonthDay, daysLeftLabel, gbp } from "@/lib/format";
 import { redeemGiftAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export default async function GiftRedeemPage({
         <p className="mx-auto mt-3 max-w-sm text-steel">
           Sorted. Your address and parking notes land 24 hours before — Wallsend area.
         </p>
-        <p className="mt-6 num text-sm text-steel">Fancy this every month? Membership is £25.</p>
+        <p className="mt-6 num text-sm text-steel">Want your own regular chair? Membership — cuts from {gbp(fromPrice(db))}.</p>
         <Button href="/join" className="mt-3">See membership</Button>
       </Container>
     );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeaderTokens from "./HeaderTokens";
+import MobileMenu from "./MobileMenu";
 import { Container } from "./ui";
 
 /**
@@ -37,24 +38,7 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3 md:hidden">
           <HeaderTokens />
           <JoinButton />
-          <details className="relative">
-            <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-steel/40 [&::-webkit-details-marker]:hidden">
-              <span className="sr-only">Menu</span>
-              <span className="flex flex-col gap-[4px]" aria-hidden>
-                <span className="block h-0.5 w-5 rounded-full bg-ink" />
-                <span className="block h-0.5 w-5 rounded-full bg-ink" />
-                <span className="block h-0.5 w-5 rounded-full bg-ink" />
-              </span>
-            </summary>
-            <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-steel/30 bg-paper p-3 shadow-lg">
-              {links.map((l) => (
-                <Link key={l.href} href={l.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-mist">
-                  {l.label}
-                </Link>
-              ))}
-              <JoinButton className="mt-2 w-full" />
-            </div>
-          </details>
+          <MobileMenu links={links} />
         </div>
       </Container>
     </header>

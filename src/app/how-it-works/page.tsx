@@ -15,13 +15,13 @@ const STEPS: ExplainerStep[] = [
     key: "billing",
     variant: "gold",
     title: "A token every billing date",
-    body: "After that, a fresh token — the gold coin — lands in your account on each billing date. Choose how often that is when you join: every 2, 3, 4 or 6 weeks.",
+    body: "After that, a fresh token — the gold coin — lands in your account on each billing date. Choose your pace when you join: every 2, 3, 4, 5 or 6 weeks, from £20 to £30 a cut. More often is cheaper per cut.",
   },
   {
     key: "life",
     variant: "gold",
-    title: "60 days to use each one",
-    body: "Every token is good for 60 days from the day it lands — two full months, so there's no rush and nothing's wasted.",
+    title: "Two billing cycles to use each one",
+    body: "Every token lasts two billing cycles from the day it lands — plenty of breathing room, so there's no rush and nothing's wasted.",
   },
   {
     key: "book",

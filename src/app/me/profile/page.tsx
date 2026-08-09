@@ -94,12 +94,13 @@ export default async function ProfilePage({
         <Card className="!bg-mist">
           <p className="text-sm font-medium">Your plan</p>
           <p className="mt-1 text-sm text-steel">
-            A token every <Num>{sub?.cycle_weeks ?? 4}</Num> weeks. Same {gbp(stats.lockedRate)} per token —
-            cadence just sets how often one drops. Change once per cycle.
+            A token every <Num>{sub?.cycle_weeks ?? 4}</Num> weeks at <Num>{gbp(stats.lockedRate)}</Num> a cut.
+            More often is cheaper per cut; a longer gap costs a little more. Change once per cycle.
           </p>
           <div className="mt-4">
             <PlanPicker
               plans={db.settings.plans}
+              planPrices={db.settings.plan_prices}
               current={sub?.cycle_weeks ?? db.settings.default_cycle_weeks}
               locked={sub?.plan_locked_until_next_billing ?? false}
               from="profile"
@@ -121,10 +122,9 @@ export default async function ProfilePage({
       <div className="mt-8 rounded-2xl border border-steel/30 p-6">
         <p className="font-display text-xl font-semibold">Before you go</p>
         <p className="mt-2 max-w-lg text-steel">
-          You&apos;re locked at <Num value>{gbp(stats.lockedRate)}</Num>. Today&apos;s rate is{" "}
-          <Num>{gbp(stats.currentRate)}</Num>. Rejoining later costs {gbp(stats.currentRate)}/month —{" "}
-          <Num>{gbp(stats.yearlyDelta)}</Num> more a year. You&apos;ve had <Num>{stats.cutsHad}</Num> cuts
-          with us and saved <Num value>{gbp(stats.saved)}</Num>.
+          You&apos;re locked at <Num value>{gbp(stats.lockedRate)}</Num> a cut. You&apos;ve had{" "}
+          <Num>{stats.cutsHad}</Num> cuts with us and saved <Num value>{gbp(stats.saved)}</Num> against
+          one-off prices. Rejoin later and you&apos;ll pay whatever the going rate is then.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <form action={pauseAction}>

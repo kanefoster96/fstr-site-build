@@ -10,6 +10,7 @@ export interface SeatSummary {
   waitlist_count: number;
   current_rate: Pence;
   founding_rate: Pence;
+  from_price: Pence; // cheapest plan — the marketing "from" figure
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -33,6 +34,10 @@ export async function getSeatSummary(): Promise<SeatSummary> {
     waitlist_count: db.waitlist.filter((w) => w.notified_at == null).length,
     current_rate: db.settings.current_rate,
     founding_rate: foundingBand.price,
+    from_price: db.settings.plan_prices.reduce(
+      (min, p) => Math.min(min, p.price),
+      db.settings.current_rate,
+    ),
   };
 }
 

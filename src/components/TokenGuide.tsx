@@ -11,7 +11,7 @@ import Coin from "./Coin";
 const STEPS = [
   { n: "1", title: "Earn a token", body: "Every billing date drops one gold coin in your wallet. One token = one full cut." },
   { n: "2", title: "Spend it to book", body: "Pick a weekday slot and the token books it — no card at the chair." },
-  { n: "3", title: "Keep it or gift it", body: "Tokens last 60 days and roll over. Not using one? It turns silver — send it to a mate." },
+  { n: "3", title: "Keep it or gift it", body: "Tokens last two billing cycles and roll over. Not using one? It turns silver — send it to a mate." },
 ];
 
 export default function TokenGuide({ className = "" }: { className?: string }) {

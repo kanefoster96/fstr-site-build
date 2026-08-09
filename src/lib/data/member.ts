@@ -4,6 +4,8 @@ import type { Token, Booking, Slot, Gift, Pence } from "../types";
 import { daysBetween, firstOfNextMonth } from "../format";
 import { memberVisibleSlots } from "../engine/booking";
 import { hasPriority } from "../engine/gamification";
+import { tokenLifeDays } from "../engine/tokens";
+import { planPrice } from "../engine/membership";
 
 export interface WalletToken extends Token {
   lifeFraction: number; // 0..1 remaining, for the countdown ring
@@ -30,6 +32,8 @@ export interface Wallet {
   nextTokenDrops: string;
   // Plan / holding
   cycleWeeks: number;
+  planPrices: { weeks: number; price: Pence }[];
+  joinRate: Pence; // price for a guest at their preferred cadence
   maxHeld: number;
   activeCap: number; // 2
   storeCap: number; // 3
@@ -53,7 +57,7 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
   if (!m) return null;
   const sub = db.subscriptions.find((s) => s.member_id === memberId);
   const now = db.clock.now;
-  const lifeDays = db.settings.rules.token_life_days;
+  const lifeDays = tokenLifeDays(db, memberId);
 
   const tokens: WalletToken[] = db.tokens
     .filter((t) => t.member_id === memberId && t.state !== "REDEEMED")
@@ -120,6 +124,8 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
     badges: m.badges ?? [],
     nextTokenDrops: sub?.next_billing_at ?? firstOfNextMonth(now),
     cycleWeeks: sub?.cycle_weeks ?? db.settings.default_cycle_weeks,
+    planPrices: db.settings.plan_prices,
+    joinRate: planPrice(db, m.cut_frequency_weeks ?? db.settings.default_cycle_weeks),
     maxHeld: db.settings.rules.max_held,
     activeCap: db.settings.rules.active_display,
     storeCap: db.settings.rules.store_cap,

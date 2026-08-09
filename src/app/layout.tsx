@@ -6,7 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "FSTR — a proper cut, done properly",
   description:
-    "Private home barbering in North Tyneside. One barber, one chair, enough time to get your cut right — and your cut saved for next time. £25 a month.",
+    "Private home barbering in North Tyneside. One barber, one chair, enough time to get your cut right — and your cut saved for next time. Memberships from £20 a cut.",
   applicationName: "FSTR",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "FSTR", statusBarStyle: "default" },

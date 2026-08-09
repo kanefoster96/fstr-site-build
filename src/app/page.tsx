@@ -21,7 +21,7 @@ export default async function HomePage() {
             <div className="absolute -bottom-3 left-1/2 h-6 w-36 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
           </div>
           <p className="mb-8 text-sm text-steel">
-            Your token — one lands each month, and each one is a cut.
+            Your token — one lands each billing cycle, and each one is a cut.
           </p>
 
           <Eyebrow>North Tyneside · One barber · One chair</Eyebrow>
@@ -35,7 +35,7 @@ export default async function HomePage() {
             actually want, save the details of your cut, and get it right every time.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button href="/join">Join FSTR · {gbp(seats.current_rate)} a month</Button>
+            <Button href="/join">Join FSTR · cuts from {gbp(seats.from_price)}</Button>
             <Button href="/how-it-works" variant="ghost">See how it works</Button>
           </div>
           <p className="mt-6 flex items-center justify-center gap-2 text-sm">
@@ -117,9 +117,9 @@ export default async function HomePage() {
             One token, one cut.
           </h2>
           <p className="mt-3 max-w-xl text-steel">
-            Your membership runs on tokens. Each month you get one — the gold coin — and each token is
-            a full haircut. Here&apos;s the life of a single token, from the day it lands to the day you
-            use it (or pass it on).
+            Your membership runs on tokens. Each billing cycle you get one — the gold coin — and each
+            token is a full haircut. Here&apos;s the life of a single token, from the day it lands to the
+            day you use it (or pass it on).
           </p>
           <div className="mt-10">
             <TokenExplainer />
@@ -134,13 +134,13 @@ export default async function HomePage() {
             <Coin size={64} className="mx-auto" />
             <Eyebrow>Your regular chair</Eyebrow>
             <p className="mx-auto mt-3 max-w-xl font-display text-2xl font-semibold sm:text-3xl">
-              No explaining your haircut from scratch every month.
+              No explaining your haircut from scratch every time.
             </p>
             <p className="mx-auto mt-3 max-w-lg text-steel">
               I&apos;ll know how you like it, what we did last time and whether there&apos;s anything you
               want to change. You get the same barber, the same attention and a cut that stays consistent.
             </p>
-            <p className="num mt-4 text-sm">One proper cut every month for <span className="value">{gbp(seats.current_rate)}</span>.</p>
+            <p className="num mt-4 text-sm">A membership built around how often you actually get a cut — from <span className="value">{gbp(seats.from_price)}</span>.</p>
             <Button href="/join" className="mt-5">Join FSTR</Button>
           </div>
         </Container>
@@ -166,18 +166,19 @@ export default async function HomePage() {
               <Coin size={52} className="mb-3" />
               <p className="text-sm text-paper/70">Membership</p>
               <p className="mt-2">
-                <Num value className="text-4xl font-semibold">{gbp(seats.current_rate)}</Num>
-                <span className="text-paper/60"> a month</span>
+                <span className="text-paper/60">from </span>
+                <Num value className="text-4xl font-semibold">{gbp(seats.from_price)}</Num>
+                <span className="text-paper/60"> a cut</span>
               </p>
               <ul className="mt-4 space-y-2 text-sm text-paper/85">
                 {[
-                  "A token for a full cut, every month",
+                  "A token for a full cut, every cycle",
                   "Beard tidy included",
+                  "Priced by how often you come — £20 to £30",
                   "Use it to book up to two weeks ahead",
                   "Your cut saved for next time",
                   "Same barber every appointment",
                   "Unused tokens roll over or can be gifted",
-                  "No queues and no rushing",
                 ].map((line) => (
                   <li key={line} className="flex gap-2">
                     <span className="value">✓</span>
@@ -186,8 +187,8 @@ export default async function HomePage() {
                 ))}
               </ul>
               <p className="num mt-4 text-xs text-paper/60">
-                Each token is yours for 60 days. Prefer a cut every few weeks? Choose how often your
-                tokens come when you join.
+                Pick your pace when you join — every 2 to 6 weeks. Each token lasts two billing cycles,
+                so nothing goes to waste.
               </p>
               <Button href="/join" className="mt-5 w-full">Join FSTR</Button>
             </Card>
@@ -243,8 +244,8 @@ export default async function HomePage() {
               Ready for a barber who remembers your cut?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-steel">
-              Join FSTR for {gbp(seats.current_rate)} a month. You&apos;ll get one proper haircut every
-              month, enough time to get it right and the same barber every time.
+              Join FSTR from {gbp(seats.from_price)} a cut, on a plan that matches how often you actually
+              get one. Enough time to get it right, and the same barber every time.
             </p>
             <p className="num mt-5 text-sm">
               <span className="value">{foundingClaimed} of 50</span> founding memberships claimed.
