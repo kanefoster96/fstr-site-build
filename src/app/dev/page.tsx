@@ -71,6 +71,7 @@ export default async function DevPage() {
           <form action={pickSessionAction} className="mt-4 flex flex-col gap-2">
             <select
               name="member_id"
+              aria-label="Choose who to sign in as"
               defaultValue={session.member?.id ?? "none"}
               className="num rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm"
             >
@@ -113,7 +114,7 @@ export default async function DevPage() {
         <form action={fireInvoicePaid} className="flex items-end gap-2 rounded-2xl bg-mist p-4">
           <label className="flex-1 text-sm">
             <span className="text-steel">invoice.paid</span>
-            <select name="member_id" className="num mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm">
+            <select name="member_id" aria-label="Member to mint a token for" className="num mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm">
               {members.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
@@ -124,7 +125,7 @@ export default async function DevPage() {
         <form action={fireInvoiceFailed} className="flex items-end gap-2 rounded-2xl bg-mist p-4">
           <label className="flex-1 text-sm">
             <span className="text-steel">invoice.payment_failed</span>
-            <select name="member_id" className="num mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm">
+            <select name="member_id" aria-label="Member to fail a payment for" className="num mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2 text-sm">
               {members.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
