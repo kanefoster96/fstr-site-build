@@ -84,6 +84,24 @@ export function isLastMinute(db: DataStore, startsAt: string): boolean {
   return delta >= 0 && delta <= db.settings.last_minute_days * 864e5;
 }
 
+/**
+ * Booking closes at midday the day before the appointment. Returns true while a
+ * slot is still bookable (now is before that cutoff).
+ */
+export function beforeCutoff(db: DataStore, startsAt: string): boolean {
+  const now = Date.parse(db.clock.now);
+  const s = new Date(startsAt);
+  const cutoff = Date.UTC(
+    s.getUTCFullYear(),
+    s.getUTCMonth(),
+    s.getUTCDate() - 1,
+    db.settings.book_cutoff_hour ?? 12,
+    0,
+    0,
+  );
+  return now < cutoff;
+}
+
 export type DayStatus = "open" | "last_minute" | "unavailable";
 
 /** Member-facing status for a weekday: open, quietly last-minute, or taken. */

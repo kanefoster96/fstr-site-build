@@ -51,7 +51,7 @@ export default async function OneOffBookPage({
       {slots.length === 0 ? (
         <div className="mt-8 rounded-2xl bg-mist p-8 text-center">
           <p className="text-steel">
-            No one-off slots open this week. Members see slots two weeks out —{" "}
+            No one-off slots open this week. Members see slots up to six weeks out —{" "}
             <a href="/join" className="value underline underline-offset-4">take a seat</a>.
           </p>
         </div>

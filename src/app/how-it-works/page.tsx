@@ -27,7 +27,7 @@ const STEPS: ExplainerStep[] = [
     key: "book",
     variant: "gold",
     title: "Use it to book",
-    body: "Spend a token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message Adam and he'll sort one.",
+    body: "Spend a token on a weekday appointment, up to six weeks ahead — or grab one of three Saturday slots. Booking closes at midday the day before. Can't see a time? Just message Adam and he'll sort one.",
   },
   {
     key: "saved",

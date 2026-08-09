@@ -182,7 +182,7 @@ export default async function HomePage() {
                   "A token for a full cut, every cycle",
                   "Beard tidy included",
                   "Priced by how often you come — £20 to £30",
-                  "Use it to book up to two weeks ahead",
+                  "Use it to book up to six weeks ahead",
                   "Your cut saved for next time",
                   "Same barber every appointment",
                   "Unused tokens roll over or can be gifted",

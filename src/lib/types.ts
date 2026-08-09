@@ -140,6 +140,7 @@ export interface Slot {
   member_only_until: ISODate | null; // members get first look / early access
   capacity: 1;
   booked?: boolean;
+  emergency?: boolean; // Saturday overflow beyond the 3 token slots — token + £10
 }
 
 export type GiftStatus = "sent" | "opened" | "booked" | "returned" | "expired";
@@ -248,6 +249,7 @@ export interface Settings {
   total_seats: number; // 130
   weekday_daily_cap: number;
   weekend_slots_max: number; // 4
+  saturday_token_slots: number; // 3 — Saturday slots bookable with a token alone
   // schedule
   weekend_day: "saturday" | "sunday"; // §13 toggle, default saturday
   open_days: number[]; // 0=Sun..6=Sat — days the barber actually works
@@ -263,6 +265,8 @@ export interface Settings {
   reveal_threshold: number; // 0.85 — per-day gate
   // Hidden days still open up close-in, so last-minute bookers can grab them.
   last_minute_days: number; // 3 — slots within this window are always bookable
+  book_horizon_days: number; // 42 — how far ahead a slot can be booked (6 weeks)
+  book_cutoff_hour: number; // 12 — booking closes at this hour the day before
   // Membership plans: a token mints every N weeks. Members can change once per
   // billing cycle. Same locked price per token; cadence sets frequency.
   plans: number[]; // [2,3,4,5,6] weeks

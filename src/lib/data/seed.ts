@@ -61,6 +61,7 @@ function defaultSettings(): Settings {
     total_seats: 130,
     weekday_daily_cap: 5,
     weekend_slots_max: 5,
+    saturday_token_slots: 3,
     weekend_day: "saturday",
     open_days: [1, 2, 3, 4, 5],
     day_start: "09:30",
@@ -70,6 +71,8 @@ function defaultSettings(): Settings {
     fill_order: [5, 4, 3, 2, 1], // Fri→Mon; Friday is the anchor
     reveal_threshold: 0.85,
     last_minute_days: 3,
+    book_horizon_days: 42, // book up to 6 weeks ahead
+    book_cutoff_hour: 12, // booking closes at midday the day before
     plans: [2, 3, 4, 5, 6],
     default_cycle_weeks: 4,
     rules: {
@@ -257,15 +260,20 @@ export function buildSeed(): DataStore {
   let slotSeq = 0;
   const openDays = settings.open_days;
   const TIMES = ["09:30", "10:30", "11:30", "12:30", "13:30"];
-  for (let d = -14; d <= 21; d++) {
+  // Generate 2 weeks of history + 6 weeks ahead (the booking horizon).
+  for (let d = -14; d <= 42; d++) {
     const day = new Date(Date.parse(NOW) + d * 864e5);
     const dow = day.getUTCDay();
     const isWeekend = dow === 6; // Saturday (default weekend day)
     if (!isWeekend && !openDays.includes(dow)) continue;
-    TIMES.forEach((hm) => {
+    TIMES.forEach((hm, ti) => {
       const [h, mn] = hm.split(":").map(Number);
       const starts = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h, mn)).toISOString();
-      const release = addDays(starts, -14);
+      // Slots become bookable 6 weeks out (the horizon).
+      const release = addDays(starts, -settings.book_horizon_days);
+      // Saturday: the first 3 slots book with a token; the rest are "emergency"
+      // overflow, bookable with a token + £10.
+      const emergency = isWeekend && ti >= settings.saturday_token_slots;
       slots.push({
         id: `slot_${++slotSeq}`,
         starts_at: starts,
@@ -273,11 +281,11 @@ export function buildSeed(): DataStore {
         day_type: isWeekend ? "weekend" : "weekday",
         published: true,
         release_at: release,
-        // Saturday: members get the first 48h after release (token + £10),
-        // then it goes public at £35. Weekdays: members get first look 7 days.
-        member_only_until: isWeekend ? addDays(release, 2) : addDays(release, 7),
+        // Weekdays go public (one-off) in the final week; Saturdays stay member/token.
+        member_only_until: isWeekend ? null : addDays(starts, -7),
         capacity: 1,
         booked: false,
+        emergency,
       });
     });
   }

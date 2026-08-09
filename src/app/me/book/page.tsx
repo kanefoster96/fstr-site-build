@@ -7,7 +7,7 @@ import { weekdayStatus, DOW_SHORT } from "@/lib/engine/schedule";
 import { hasPriority } from "@/lib/engine/gamification";
 import { getWallet } from "@/lib/data/member";
 import { fmtDay, fmtTime, gbp } from "@/lib/format";
-import { bookSlotAction, bookWeekendUpgradeAction, bookWeekendPaidAction } from "./actions";
+import { bookSlotAction, bookWeekendUpgradeAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +32,22 @@ export default async function MemberBookPage({
   const priority = hasPriority(session.member) ? 24 : 0;
   const slots = memberVisibleSlots(db, priority);
   const weekend = weekendVisibleSlots(db);
+  const satToken = weekend.filter((s) => !s.emergency);
+  // Emergency Saturday slots only open once that day's 3 token slots are booked.
+  const satDate = (iso: string) => iso.slice(0, 10);
+  const tokenFull = new Set<string>();
+  {
+    const byDate = new Map<string, { total: number; booked: number }>();
+    for (const s of db.slots.filter((x) => x.day_type === "weekend" && !x.emergency)) {
+      const k = satDate(s.starts_at);
+      const e = byDate.get(k) ?? { total: 0, booked: 0 };
+      e.total += 1;
+      if (s.booked) e.booked += 1;
+      byDate.set(k, e);
+    }
+    for (const [k, e] of byDate) if (e.total > 0 && e.booked === e.total) tokenFull.add(k);
+  }
+  const satEmergency = weekend.filter((s) => s.emergency && tokenFull.has(satDate(s.starts_at)));
   const weekStatus = [1, 2, 3, 4, 5].map((d) => ({ d, status: weekdayStatus(db, d) }));
 
   const byDay = new Map<string, typeof slots>();
@@ -78,16 +94,17 @@ export default async function MemberBookPage({
         ))}
         <div className="rounded-lg border border-brass/40 px-1 py-2.5 text-center">
           <p className="num text-[11px] text-steel">Sat</p>
-          <p className="num mt-0.5 text-[10px] value">Priority</p>
+          <p className="num mt-0.5 text-[10px] value">Token</p>
         </div>
       </div>
       <p className="mt-2 text-xs text-steel">
-        Quieter days open up nearer the time — check back for last-minute slots.
+        Book up to 6 weeks ahead. Booking closes at midday the day before — quieter days also open
+        up nearer the time.
       </p>
 
       {sp.error?.startsWith("no-token") && (
         <p className="mt-4 rounded-lg bg-mist px-4 py-3 text-sm">
-          You&apos;ve no available token right now. Your next drops on the 1st — or pay for a Saturday priority spot below.
+          You&apos;ve no available token right now. Your next drops on your billing date.
         </p>
       )}
 
@@ -99,7 +116,7 @@ export default async function MemberBookPage({
         </div>
       ) : slots.length === 0 ? (
         <p className="mt-8 rounded-2xl bg-mist p-8 text-center text-steel">
-          No weekday slots open right now — they release two weeks out.
+          No weekday slots open right now — they release up to six weeks out.
         </p>
       ) : (
         <div className="mt-8 space-y-6">
@@ -130,62 +147,73 @@ export default async function MemberBookPage({
         </div>
       )}
 
-      {/* Saturday priority slots */}
+      {/* Saturday — 3 token slots, then emergency overflow at token + £10 */}
       {weekend.length > 0 && (
         <div className="mt-12">
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-2xl font-semibold">Saturday priority</h2>
+            <h2 className="font-display text-2xl font-semibold">Saturdays</h2>
             <span className="num text-sm text-steel">
-              upgrade a token +{gbp(db.settings.weekend_upgrade_surcharge)} · or {gbp(db.settings.weekend_public_price)}
+              {db.settings.saturday_token_slots} with a token · then +{gbp(db.settings.weekend_upgrade_surcharge)}
             </span>
           </div>
           <p className="mt-1 text-sm text-steel">
-            Saturdays are in demand, so they&apos;re priority spots. Use a token with a small
-            top-up, or just pay for it.
+            Each Saturday opens {db.settings.saturday_token_slots} slots you can book with a token, just
+            like a weekday. Once they&apos;re gone, emergency slots open at a token + {gbp(db.settings.weekend_upgrade_surcharge)}.
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {weekend.map((s) => {
-              const earlyAccess =
-                !!s.member_only_until && Date.parse(db.clock.now) < Date.parse(s.member_only_until);
-              return (
-                <div key={s.id} className="rounded-2xl border border-brass/40 bg-paper p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="num text-lg">
-                      {fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}
-                    </p>
-                    {earlyAccess && (
-                      <span className="num rounded-full bg-mist px-2 py-0.5 text-[10px] uppercase tracking-wide value">
-                        Members first
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <form action={bookWeekendUpgradeAction}>
-                      <input type="hidden" name="slot_id" value={s.id} />
-                      <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>
-                        Token +{gbp(db.settings.weekend_upgrade_surcharge)}
-                      </Button>
-                    </form>
-                    {!earlyAccess && (
-                      <form action={bookWeekendPaidAction}>
-                        <input type="hidden" name="slot_id" value={s.id} />
-                        <Button type="submit" variant="ghost" className="!px-4 !py-2 text-xs">
-                          Pay {gbp(db.settings.weekend_public_price)}
-                        </Button>
-                      </form>
-                    )}
-                  </div>
-                  <p className="num mt-2 text-[11px] text-steel">
-                    {earlyAccess
-                      ? `Your 48h head start — upgrade a token before it opens to all at ${gbp(db.settings.weekend_public_price)}.`
-                      : available === 0
-                        ? `No token — pay ${gbp(db.settings.weekend_public_price)} to book.`
-                        : `Open to all · token +${gbp(db.settings.weekend_upgrade_surcharge)} or ${gbp(db.settings.weekend_public_price)}.`}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+
+          {satToken.length > 0 && (
+            <div className="mt-4">
+              <p className="num text-xs uppercase tracking-[0.15em] text-steel">With a token</p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                {satToken.map((s) => (
+                  <form
+                    key={s.id}
+                    action={bookSlotAction}
+                    className="flex items-center justify-between rounded-2xl border border-brass/40 bg-paper p-4"
+                  >
+                    <input type="hidden" name="slot_id" value={s.id} />
+                    <div>
+                      <p className="num text-lg">{fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}</p>
+                      <label className="mt-1 flex items-center gap-1.5 text-xs text-steel">
+                        <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
+                        Full beard +{gbp(db.settings.beard_addon_price)}
+                      </label>
+                    </div>
+                    <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>Book</Button>
+                  </form>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {satEmergency.length > 0 && (
+            <div className="mt-5">
+              <p className="num text-xs uppercase tracking-[0.15em] text-steel">
+                Emergency · token +{gbp(db.settings.weekend_upgrade_surcharge)}
+              </p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                {satEmergency.map((s) => (
+                  <form
+                    key={s.id}
+                    action={bookWeekendUpgradeAction}
+                    className="flex items-center justify-between rounded-2xl border border-steel/25 bg-paper p-4"
+                  >
+                    <input type="hidden" name="slot_id" value={s.id} />
+                    <div>
+                      <p className="num text-lg">{fmtDay(s.starts_at)} · {fmtTime(s.starts_at)}</p>
+                      <label className="mt-1 flex items-center gap-1.5 text-xs text-steel">
+                        <input type="checkbox" name="beard" className="accent-[var(--brass)]" />
+                        Full beard +{gbp(db.settings.beard_addon_price)}
+                      </label>
+                    </div>
+                    <Button type="submit" className="!px-4 !py-2 text-xs" disabled={available === 0}>
+                      Token +{gbp(db.settings.weekend_upgrade_surcharge)}
+                    </Button>
+                  </form>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </Container>

@@ -289,7 +289,7 @@ export default async function WalletPage({
               <div className="rounded-2xl border border-brass/40 bg-mist p-6">
                 <p className="text-sm text-steel">Ready for your first cut?</p>
                 <p className="num mt-1 text-xl">
-                  {soonest ? fmtDateTime(soonest.starts_at) : "Slots open two weeks out"}
+                  {soonest ? fmtDateTime(soonest.starts_at) : "Slots open up to six weeks out"}
                 </p>
                 <p className="mt-1 text-sm text-steel">Try a one-off, or become a member above.</p>
                 <Button href="/book" className="mt-4 w-full">Book a one-off — {gbp(db.settings.oneoff_price)}</Button>

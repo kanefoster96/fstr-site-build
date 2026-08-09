@@ -3,7 +3,7 @@ import type { DataStore, Slot, Booking, Pence, CreatedVia } from "../types";
 import { reserveToken, cancelReservation, spendSilverPair, TokenError } from "./tokens";
 import { markGiftRedeemed } from "./gifts";
 import { hoursBetween } from "../format";
-import { revealedWeekdays, isLastMinute } from "./schedule";
+import { revealedWeekdays, isLastMinute, beforeCutoff } from "./schedule";
 
 /** Booking rules (§5). */
 
@@ -29,12 +29,16 @@ export function memberVisibleSlots(db: DataStore, priorityHours = 0): Slot[] {
         s.day_type === "weekday" &&
         Date.parse(s.starts_at) > now &&
         Date.parse(s.release_at) - early <= now &&
+        beforeCutoff(db, s.starts_at) &&
         (open.includes(new Date(s.starts_at).getUTCDay()) || isLastMinute(db, s.starts_at)),
     )
     .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
 }
 
-/** Saturday slots a member can see now (priority: token + £10, or £35). */
+/**
+ * Saturday slots a member can see now. The first 3 (emergency=false) book with a
+ * token alone; the rest are emergency overflow (token + £10).
+ */
 export function weekendVisibleSlots(db: DataStore): Slot[] {
   const now = Date.parse(db.clock.now);
   return db.slots
@@ -44,7 +48,8 @@ export function weekendVisibleSlots(db: DataStore): Slot[] {
         !s.booked &&
         s.day_type === "weekend" &&
         Date.parse(s.starts_at) > now &&
-        Date.parse(s.release_at) <= now,
+        Date.parse(s.release_at) <= now &&
+        beforeCutoff(db, s.starts_at),
     )
     .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
 }
@@ -77,8 +82,12 @@ export function bookWithToken(
   const slot = db.slots.find((s) => s.id === slotId);
   if (!slot) throw new TokenError("Slot not found.");
   if (slot.booked) throw new TokenError("That slot's just gone.");
-  if (slot.day_type === "weekend") {
-    throw new TokenError("Weekend slots aren't bookable with a token alone.");
+  // Emergency Saturday overflow needs the +£10 upgrade; the 3 token slots don't.
+  if (slot.day_type === "weekend" && slot.emergency) {
+    throw new TokenError("That's an emergency Saturday slot — token + £10.");
+  }
+  if (!beforeCutoff(db, slot.starts_at)) {
+    throw new TokenError("Booking closes at midday the day before.");
   }
 
   const id = bookingId();
@@ -91,7 +100,7 @@ export function bookWithToken(
     member_id: memberId,
     token_id: tokenId,
     slot_id: slotId,
-    kind: "member",
+    kind: "member", // token-funded cut; slot.day_type marks weekday vs Saturday
     status: "confirmed",
     price_paid: 0,
     created_via: opts.via ?? "calendar",
@@ -117,6 +126,9 @@ export function bookWithSilverPair(
   if (slot.booked) throw new TokenError("That slot's just gone.");
   if (slot.day_type === "weekend") {
     throw new TokenError("Weekend slots aren't bookable with silver coins.");
+  }
+  if (!beforeCutoff(db, slot.starts_at)) {
+    throw new TokenError("Booking closes at midday the day before.");
   }
   const [a, b] = tokenIds;
 
@@ -155,6 +167,9 @@ export function bookWeekendUpgrade(
   if (!slot) throw new TokenError("Slot not found.");
   if (slot.booked) throw new TokenError("That slot's just gone.");
   if (slot.day_type !== "weekend") throw new TokenError("That's not a weekend slot.");
+  if (!beforeCutoff(db, slot.starts_at)) {
+    throw new TokenError("Booking closes at midday the day before.");
+  }
 
   const beard = !!opts.beard;
   const surcharge = db.settings.weekend_upgrade_surcharge + (beard ? db.settings.beard_addon_price : 0);
@@ -189,6 +204,9 @@ export function bookOneOff(
   const slot = db.slots.find((s) => s.id === slotId);
   if (!slot) throw new TokenError("Slot not found.");
   if (slot.booked) throw new TokenError("That slot's just gone.");
+  if (!beforeCutoff(db, slot.starts_at)) {
+    throw new TokenError("Booking closes at midday the day before.");
+  }
 
   const beard = !!opts.beard;
   const price: Pence =
