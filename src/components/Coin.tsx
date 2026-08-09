@@ -74,12 +74,10 @@ export default function Coin({
       role="img"
       aria-label={flipped && code ? `Gift token, code ${code}` : tone === "silver" ? "Gift-only token" : "FSTR token"}
     >
-      {/* outer edge line */}
+      {/* simple concentric fills: outer edge, rim band, bright face */}
       <circle cx="60" cy="60" r="58" fill={p.edge} />
-      {/* gold rim band */}
-      <circle cx="60" cy="60" r="56" fill={p.rim} />
-      {/* bright face with a darker inner line */}
-      <circle cx="60" cy="60" r="47" fill={p.face} stroke={p.edge} strokeWidth="2.5" />
+      <circle cx="60" cy="60" r="55" fill={p.rim} />
+      <circle cx="60" cy="60" r="47" fill={p.face} />
 
       {flipped && code ? (
         <>
