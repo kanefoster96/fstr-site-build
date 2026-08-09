@@ -12,7 +12,7 @@ const PER_COPY = 8;
 
 export default function PromoBanner() {
   return (
-    <div className="group relative overflow-hidden border-b border-ink/10 bg-brass text-ink">
+    <div className="group relative overflow-hidden border-b border-steel/20 bg-mist text-ink">
       <span className="sr-only">{MESSAGE}</span>
       <div
         aria-hidden
