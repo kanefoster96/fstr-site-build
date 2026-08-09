@@ -52,10 +52,17 @@ function defaultSettings(): Settings {
     current_rate: BAND_3,
     waitlist_price: 3500,
     total_seats: 130,
-    weekday_daily_cap: 3,
-    weekend_slots_max: 4,
+    weekday_daily_cap: 5,
+    weekend_slots_max: 5,
     weekend_day: "saturday",
     open_days: [1, 2, 3, 4, 5],
+    day_start: "09:30",
+    day_end: "14:30",
+    slot_length_mins: 45,
+    slot_buffer_mins: 15,
+    base_open_days: [3, 4, 5], // Wed–Fri visible by default
+    reveal_order: [2, 1], // Tuesday, then Monday
+    reveal_threshold: 0.85,
     rules: {
       token_life_days: 60,
       max_held: 2,
@@ -227,17 +234,17 @@ export function buildSeed(): DataStore {
     }
   }
 
-  // Publish weekday slots: 2 weeks back to 3 weeks forward, respecting caps.
+  // Publish Mon–Sat slots. Hours 9:30–14:30, 45-min slots on the hour
+  // (45 + 15 buffer): 09:30, 10:30, 11:30, 12:30, 13:30.
   let slotSeq = 0;
   const openDays = settings.open_days;
+  const TIMES = ["09:30", "10:30", "11:30", "12:30", "13:30"];
   for (let d = -14; d <= 21; d++) {
     const day = new Date(Date.parse(NOW) + d * 864e5);
     const dow = day.getUTCDay();
     const isWeekend = dow === 6; // Saturday (default weekend day)
     if (!isWeekend && !openDays.includes(dow)) continue;
-    const times = isWeekend ? ["10:00", "11:00", "12:00", "13:00"] : ["11:00", "12:00", "13:00"];
-    const cap = isWeekend ? settings.weekend_slots_max : settings.weekday_daily_cap;
-    times.slice(0, cap).forEach((hm) => {
+    TIMES.forEach((hm) => {
       const [h, mn] = hm.split(":").map(Number);
       const starts = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h, mn)).toISOString();
       const release = addDays(starts, -14);
@@ -248,7 +255,9 @@ export function buildSeed(): DataStore {
         day_type: isWeekend ? "weekend" : "weekday",
         published: true,
         release_at: release,
-        member_only_until: isWeekend ? addDays(starts, -12) : addDays(release, 7),
+        // Saturday: members get 48h early access (token + £10) before it goes
+        // public at £35. Weekdays: members get first look for 7 days.
+        member_only_until: isWeekend ? addDays(starts, -2) : addDays(release, 7),
         capacity: 1,
         booked: false,
       });
@@ -405,6 +414,50 @@ export function buildSeed(): DataStore {
     tok.expires_at = addDays(issued, 60);
     tok.state = "EXPIRED";
     logEvent(tok.id, "expired", "system", tok.expires_at);
+  }
+
+  // Demand fill for the staged-opening demo: book the released, upcoming
+  // Wed–Fri slots to ~78% so members see "Wed–Fri 78% full — Tuesday opens at
+  // 85%". One more booking tips it over and Tuesday reveals live.
+  {
+    const nowMs = Date.parse(NOW);
+    const wtf = slots
+      .filter(
+        (s) =>
+          s.day_type === "weekday" &&
+          !s.booked &&
+          Date.parse(s.starts_at) > nowMs &&
+          Date.parse(s.release_at) <= nowMs &&
+          [3, 4, 5].includes(new Date(s.starts_at).getUTCDay()),
+      )
+      .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
+    // Total released Wed–Fri = booked-so-far (members[1]) + these; aim 78%.
+    const alreadyBooked = slots.filter(
+      (s) =>
+        s.day_type === "weekday" &&
+        s.booked &&
+        Date.parse(s.starts_at) > nowMs &&
+        Date.parse(s.release_at) <= nowMs &&
+        [3, 4, 5].includes(new Date(s.starts_at).getUTCDay()),
+    ).length;
+    const totalReleased = wtf.length + alreadyBooked;
+    const target = Math.floor(totalReleased * 0.78) - alreadyBooked;
+    for (let i = 0; i < Math.max(0, target); i++) {
+      const s = wtf[i];
+      const m = members[1 + ((i * 3 + 7) % SEATS)];
+      const tok = mintToken(m.id, addDays(NOW, -(2 + (i % 20))));
+      tok.state = "RESERVED";
+      tok.frozen_at = NOW;
+      tok.booking_id = `bk_${++bookingSeq}`;
+      logEvent(tok.id, "reserved", m.id, NOW);
+      logEvent(tok.id, "frozen", "system", NOW);
+      s.booked = true;
+      bookings.push({
+        id: tok.booking_id, member_id: m.id, token_id: tok.id, slot_id: s.id,
+        kind: "member", status: "confirmed", price_paid: 0,
+        created_via: i % 4 === 0 ? "chat" : "calendar", created_at: NOW, beard_addon: i % 5 === 0,
+      });
+    }
   }
 
   // Waitlist: a couple waiting.

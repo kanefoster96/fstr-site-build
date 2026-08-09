@@ -103,7 +103,7 @@ export default async function WalletPage() {
         reserved.length === 0 && (
           <div className="mt-4 rounded-2xl bg-mist p-6">
             <p className="text-sm text-steel">
-              Your usual Tuesday 11am is free in 4 weeks — want to hold it? Prebook at your next cut.
+              Your usual Thursday 11:30 is free in 4 weeks — want to hold it? Prebook at your next cut.
             </p>
           </div>
         )

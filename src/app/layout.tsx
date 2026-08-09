@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "FSTR Cuts", statusBarStyle: "default" },
   openGraph: {
     title: "FSTR Cuts — one cut a month, never wasted",
-    description: "The home-worker's barber. Get a proper cut on a Tuesday lunchtime.",
+    description: "The home-worker's barber. Get a proper cut on a quiet weekday lunchtime.",
     type: "website",
   },
 };

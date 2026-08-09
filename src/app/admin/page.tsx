@@ -20,7 +20,7 @@ export default async function AdminTodayPage() {
 
   return (
     <Container className="py-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Eyebrow>Today · {fmtDay(db.clock.now)}</Eyebrow>
           <h1 className="mt-2 font-display text-4xl font-bold">Your day</h1>
@@ -112,9 +112,13 @@ export function AdminNav() {
     ["/admin/scan", "Scan"],
   ];
   return (
-    <nav className="hidden flex-wrap gap-1 sm:flex">
+    <nav className="-mx-5 flex gap-1 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {links.map(([href, label]) => (
-        <Link key={href} href={href} className="rounded-full px-3 py-1.5 text-sm text-steel hover:bg-mist hover:text-ink">
+        <Link
+          key={href}
+          href={href}
+          className="shrink-0 rounded-full px-3 py-1.5 text-sm text-steel hover:bg-mist hover:text-ink"
+        >
           {label}
         </Link>
       ))}

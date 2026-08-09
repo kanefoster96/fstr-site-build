@@ -6,6 +6,7 @@ import { parseTimeHints, slotsForHint } from "@/lib/engine/chat";
 import { fmtTime, fmtDay } from "@/lib/format";
 import { sendBarberMessage, offerSlotAction } from "./actions";
 import BarberGate from "@/components/BarberGate";
+import { AdminNav } from "../page";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +37,13 @@ export default async function InboxPage({
 
   return (
     <Container className="py-12">
-      <Eyebrow>Inbox</Eyebrow>
-      <h1 className="mt-2 font-display text-3xl font-bold">Chats</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Eyebrow>Inbox</Eyebrow>
+          <h1 className="mt-2 font-display text-3xl font-bold">Chats</h1>
+        </div>
+        <AdminNav />
+      </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[260px_1fr]">
         {/* Thread list */}

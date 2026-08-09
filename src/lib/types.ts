@@ -225,7 +225,16 @@ export interface Settings {
   weekend_slots_max: number; // 4
   // schedule
   weekend_day: "saturday" | "sunday"; // §13 toggle, default saturday
-  open_days: number[]; // 0=Sun..6=Sat
+  open_days: number[]; // 0=Sun..6=Sat — days the barber actually works
+  day_start: string; // "09:30" — first slot start
+  day_end: string; // "14:30" — chair closes (last slot ends by here)
+  slot_length_mins: number; // 45
+  slot_buffer_mins: number; // 15 end buffer → slots sit on the hour
+  // staged, demand-driven opening: reveal the next weekday once the open set
+  // crosses the threshold booked. base_open_days are always visible.
+  base_open_days: number[]; // [3,4,5] Wed–Fri
+  reveal_order: number[]; // [2,1] Tuesday then Monday
+  reveal_threshold: number; // 0.85
   // rule numbers (all admin-editable, defaults as specced §13)
   rules: {
     token_life_days: number; // 60

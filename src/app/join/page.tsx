@@ -1,12 +1,12 @@
 import Coin from "@/components/Coin";
 import { Container, Button, Num, Eyebrow, Card } from "@/components/ui";
-import { getSeatSummary, getSettings, getAvailabilityShape } from "@/lib/data/queries";
+import { getSeatSummary, getSettings } from "@/lib/data/queries";
+import { getDb } from "@/lib/data/db";
+import { getRevealState, slotStartTimes, DOW_SHORT } from "@/lib/engine/schedule";
 import { gbp } from "@/lib/format";
 import { joinAction } from "./actions";
 
 export const dynamic = "force-dynamic";
-
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function JoinPage({
   searchParams,
@@ -16,7 +16,9 @@ export default async function JoinPage({
   const sp = await searchParams;
   const seats = await getSeatSummary();
   const settings = await getSettings();
-  const shape = await getAvailabilityShape();
+  const db = await getDb();
+  const reveal = getRevealState(db);
+  const times = slotStartTimes(db);
   const full = seats.left <= 0;
 
   if (sp.waitlisted) {
@@ -80,30 +82,33 @@ export default async function JoinPage({
           {/* Honest availability grid — shown before payment */}
           <div className="mt-8">
             <p className="text-sm font-medium">When cuts actually happen</p>
-            <p className="text-xs text-steel">No surprises — this is the real week.</p>
-            <div className="mt-3 grid grid-cols-7 gap-1.5">
-              {DAY_NAMES.map((d, i) => {
-                const open = shape.open_days.includes(i);
-                const weekend = (shape.weekend_day === "saturday" && i === 6) ||
-                  (shape.weekend_day === "sunday" && i === 0);
+            <p className="text-xs text-steel">
+              {settings.day_start}–{settings.day_end}, {times.length} slots a day, 45 min each. No surprises.
+            </p>
+            <div className="mt-3 grid grid-cols-6 gap-1.5">
+              {[1, 2, 3, 4, 5, 6].map((i) => {
+                const isSat = i === 6;
+                const openNow = !isSat && reveal.revealed.includes(i);
+                const willOpen = !isSat && !openNow;
                 return (
                   <div
-                    key={d}
+                    key={i}
                     className={`rounded-lg px-1 py-3 text-center ${
-                      open ? "bg-mist" : weekend ? "border border-brass/40" : "bg-paper border border-steel/15"
+                      openNow ? "bg-mist" : isSat ? "border border-brass/40" : "bg-paper border border-dashed border-steel/25"
                     }`}
                   >
-                    <p className="num text-[11px] text-steel">{d}</p>
+                    <p className="num text-[11px] text-steel">{DOW_SHORT[i]}</p>
                     <p className="num mt-1 text-sm">
-                      {open ? shape.weekday_daily_cap : weekend ? shape.weekend_slots_max : "—"}
+                      {openNow ? times.length : isSat ? "£35" : "soon"}
                     </p>
                   </div>
                 );
               })}
             </div>
             <p className="num mt-2 text-[11px] text-steel">
-              {shape.weekday_daily_cap} weekday slots/day · {shape.weekend_slots_max} on the{" "}
-              {shape.weekend_day} (occasional)
+              {reveal.revealed.map((d) => DOW_SHORT[d]).join("/")} open now
+              {reveal.nextDay != null && ` · ${DOW_SHORT[reveal.nextDay]} opens as they fill`} ·
+              Sat = priority (token +{gbp(settings.weekend_upgrade_surcharge)} or {gbp(settings.weekend_public_price)})
             </p>
           </div>
         </div>

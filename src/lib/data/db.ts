@@ -1,6 +1,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
+import os from "os";
 import type { DataStore } from "../types";
 import { buildSeed } from "./seed";
 
@@ -11,7 +12,13 @@ import { buildSeed } from "./seed";
  * re-implementing these functions against Postgres — callers never change.
  */
 
-const DATA_DIR = path.join(process.cwd(), ".data");
+// Locally we persist to ./.data. On serverless hosts (e.g. Vercel) the project
+// dir is read-only, so fall back to the OS temp dir, which is writable and
+// stays warm within an instance. Override with FSTR_DATA_DIR if needed. State
+// is a mock demo store — it may reset when a serverless instance recycles.
+const DATA_DIR =
+  process.env.FSTR_DATA_DIR ||
+  (process.env.VERCEL ? path.join(os.tmpdir(), "fstr-cuts") : path.join(process.cwd(), ".data"));
 const STORE_PATH = path.join(DATA_DIR, "store.json");
 
 // Cache across hot reloads in dev.

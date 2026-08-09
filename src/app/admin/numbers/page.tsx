@@ -37,7 +37,7 @@ export default async function NumbersPage() {
 
   return (
     <Container className="py-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Eyebrow>Numbers</Eyebrow>
           <h1 className="mt-2 font-display text-3xl font-bold">Your true position</h1>

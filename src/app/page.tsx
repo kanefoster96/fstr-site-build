@@ -5,6 +5,8 @@ import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui
 import { getSeatSummary } from "@/lib/data/queries";
 import { gbp } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const seats = await getSeatSummary();
 
@@ -22,7 +24,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-5 max-w-md text-lg text-steel">
               Membership home barbering for people who work from home. A proper cut on a
-              Tuesday lunchtime — while everyone else waits for Saturday.
+              quiet weekday lunchtime — while everyone else waits for Saturday.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button href="/join">Join — {gbp(seats.founding_rate)}/month</Button>
@@ -141,10 +143,11 @@ export default async function HomePage() {
             <div>
               <Eyebrow>The home-worker&apos;s barber</Eyebrow>
               <p className="mt-3 max-w-lg font-display text-2xl font-semibold sm:text-3xl">
-                Booked out Saturdays? We don&apos;t do them.
+                Everyone else fights for Saturday.
               </p>
               <p className="mt-2 text-paper/70">
-                Tuesday, <Num className="text-paper">11am</Num>, done by half-eleven.
+                You get Thursday, <Num className="text-paper">11:30</Num>, done by quarter past. Need a
+                Saturday? Grab a priority spot.
               </p>
             </div>
             <Button href="/join" className="shrink-0">
@@ -176,7 +179,7 @@ export default async function HomePage() {
             {[
               ["“Best decision — a proper cut mid-week, no faff.”", "Danny, member since March"],
               ["“Gifted one to my brother. He joined the week after.”", "Reece, Founding 50"],
-              ["“Tuesday 11am is mine now. Never going back.”", "Marcus, WFH"],
+              ["“Thursday 11:30 is mine now. Never going back.”", "Marcus, WFH"],
             ].map(([quote, who]) => (
               <Card key={who} className="!bg-mist">
                 <p className="text-sm">{quote}</p>
