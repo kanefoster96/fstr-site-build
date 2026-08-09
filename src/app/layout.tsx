@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import PromoBanner from "@/components/PromoBanner";
 
 export const metadata: Metadata = {
   title: "FSTR — a proper cut, done properly",
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <SiteHeader />
+        <PromoBanner />
         <main id="main" className="flex-1">{children}</main>
         <SiteFooter />
       </body>
