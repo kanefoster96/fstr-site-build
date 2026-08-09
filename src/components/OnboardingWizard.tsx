@@ -98,13 +98,13 @@ export default function OnboardingWizard({
         ))}
       </div>
 
-      <div className="mt-8 rounded-3xl border border-steel/20 bg-paper p-6 sm:p-8">
+      <div className="mt-5 rounded-3xl border border-steel/20 bg-paper p-5 sm:mt-8 sm:p-8">
         {/* Step 0 — your profile */}
         {step === 0 && (
           <Step title="Set up your profile" blurb="Two quick things — and a photo if you fancy.">
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2">
               <label className="relative cursor-pointer">
-                <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-mist ring-2 ring-brass/30">
+                <span className="grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-mist ring-2 ring-brass/30">
                   {avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={avatar} alt="You" className="h-full w-full object-cover" />
@@ -317,7 +317,7 @@ export default function OnboardingWizard({
 
         {/* Nav */}
         {step < 3 && (
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-6 flex items-center justify-between">
             <button
               type="button"
               onClick={() => setStep((s) => Math.max(0, s - 1))}
@@ -343,9 +343,9 @@ export default function OnboardingWizard({
 function Step({ title, blurb, children }: { title: string; blurb: string; children: React.ReactNode }) {
   return (
     <div className="animate-fade-up">
-      <h2 className="font-display text-2xl font-semibold">{title}</h2>
+      <h2 className="font-display text-xl font-semibold sm:text-2xl">{title}</h2>
       <p className="mt-1 text-sm text-steel">{blurb}</p>
-      <div className="mt-5 space-y-4">{children}</div>
+      <div className="mt-4 space-y-3.5">{children}</div>
     </div>
   );
 }

@@ -102,3 +102,14 @@ body {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
+
+/* iOS Safari zooms the whole page in when you focus a field smaller than 16px.
+   Force form controls to 16px on small screens so tapping to type never zooms
+   or scrolls the page. (Specific enough to beat Tailwind's text-sm.) */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}

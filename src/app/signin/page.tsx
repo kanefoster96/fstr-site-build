@@ -23,7 +23,7 @@ export default async function SignInPage({
   if (session.member) redirect("/me");
 
   return (
-    <Container className="py-16">
+    <Container className="pb-16 pt-8 sm:py-16">
       <div className="mx-auto max-w-sm">
         <div className="text-center">
           <Coin size={72} className="mx-auto" />

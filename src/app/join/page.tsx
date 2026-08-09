@@ -39,18 +39,16 @@ export default async function JoinPage({
     .map((s) => ({ id: s.id, day: fmtDay(s.starts_at), time: fmtTime(s.starts_at) }));
 
   return (
-    <Container className="py-12">
-      <div className="mb-8 text-center">
+    <Container className="pb-12 pt-6 sm:py-12">
+      <div className="mb-6 text-center sm:mb-8">
         <Eyebrow>Join FSTR</Eyebrow>
-        <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">
+        <h1 className="mt-2 font-display text-3xl font-bold sm:text-5xl">
           Let&apos;s find your <span className="value">pace</span>.
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-steel">
-          Buy a single token for a one-off cut, or become a member for cheaper tokens the more often
-          you come — one token, one cut, either way.{" "}
-          <TokenGuide />
-        </p>
-        <p className="mx-auto mt-3 text-sm text-steel">
+        <p className="mx-auto mt-2 max-w-md text-sm text-steel sm:text-base">
+          A single token for a one-off cut, or a membership for cheaper tokens the more often you
+          come. <TokenGuide />
+          <span className="mx-1.5 text-steel/50">·</span>
           Already with us?{" "}
           <Link href="/signin" className="value underline underline-offset-4">
             Sign in
