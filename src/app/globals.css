@@ -14,11 +14,7 @@
   --paper: #fcfcfa; /* page background, warm white */
   --ink: #111413; /* near-black text */
   --steel: #8b9196; /* secondary text, hairlines, chrome */
-  --brass: #f0a90a; /* the accent — a warm, sunny yellow */
   --mist: #efefea; /* cards, wells, section breaks */
-
-  --brass-light: #ffd54a;
-  --brass-dark: #cf9006;
 
   /* Cartoon coin colours: bright yellow face, a gold rim with a darker edge
      line, and soft golden-orange lettering. Flat — no shading. */
@@ -26,6 +22,12 @@
   --coin-gold-rim: #f4c520; /* rim band */
   --coin-gold-edge: #ecb61c; /* edge + inner line */
   --coin-gold-ink: #e0a227; /* text */
+
+  /* The accent IS the coin's gold — one shared gold family, nothing off-tone.
+     Accent = the coin's edge gold; lighter/darker steps reuse the face + ink. */
+  --brass: var(--coin-gold-edge);
+  --brass-light: var(--coin-gold);
+  --brass-dark: var(--coin-gold-ink);
   --coin-silver: #e6eaee; /* face */
   --coin-silver-rim: #c6cdd4; /* rim band */
   --coin-silver-edge: #aab2bb; /* edge + inner line */
