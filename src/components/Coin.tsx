@@ -58,8 +58,8 @@ export default function Coin({
     return (
       <svg width={size} height={size} viewBox="0 0 120 120" className={className} style={style} role="img" aria-label="Empty token slot">
         <circle cx="60" cy="60" r="53" fill="none" stroke="var(--steel)" strokeOpacity="0.4" strokeWidth="2" strokeDasharray="5 6" />
-        <text x="60" y="58" textAnchor="middle" fontFamily={ROUND} fontSize="26" fontWeight="800" fill="var(--steel)" fillOpacity="0.5">FSTR</text>
-        <text x="60" y="76" textAnchor="middle" fontFamily={ROUND} fontSize="12" fontWeight="700" fill="var(--steel)" fillOpacity="0.45">+1 CUT</text>
+        <text x="60" y="52" textAnchor="middle" dominantBaseline="central" fontFamily={ROUND} fontSize="26" fontWeight="800" fill="var(--steel)" fillOpacity="0.5">FSTR</text>
+        <text x="60" y="74" textAnchor="middle" dominantBaseline="central" fontFamily={ROUND} fontSize="12" fontWeight="700" fill="var(--steel)" fillOpacity="0.45">+1 CUT</text>
       </svg>
     );
   }
@@ -83,13 +83,13 @@ export default function Coin({
 
       {flipped && code ? (
         <>
-          <text x="60" y="52" textAnchor="middle" fontFamily={ROUND} fontSize="12" fontWeight="700" fill={p.ink} letterSpacing="1">GIFT</text>
-          <text x="60" y="74" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="13" fontWeight="600" fill={p.ink} letterSpacing="0.5">{code}</text>
+          <text x="60" y="51" textAnchor="middle" dominantBaseline="central" fontFamily={ROUND} fontSize="12" fontWeight="700" fill={p.ink} letterSpacing="1">GIFT</text>
+          <text x="60" y="74" textAnchor="middle" dominantBaseline="central" fontFamily="var(--font-mono)" fontSize="13" fontWeight="600" fill={p.ink} letterSpacing="0.5">{code}</text>
         </>
       ) : (
         <>
-          <text x="60" y="57" textAnchor="middle" fontFamily={ROUND} fontSize="33" fontWeight="800" fill={p.ink}>FSTR</text>
-          <text x="60" y="78" textAnchor="middle" fontFamily={ROUND} fontSize="15" fontWeight="700" fill={p.ink} letterSpacing="0.5">+1 CUT</text>
+          <text x="60" y="52" textAnchor="middle" dominantBaseline="central" fontFamily={ROUND} fontSize="29" fontWeight="800" fill={p.ink}>FSTR</text>
+          <text x="60" y="75" textAnchor="middle" dominantBaseline="central" fontFamily={ROUND} fontSize="13.5" fontWeight="700" fill={p.ink} letterSpacing="1">+1 CUT</text>
         </>
       )}
 
