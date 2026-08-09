@@ -1,6 +1,7 @@
 import "server-only";
 import type { DataStore, Subscription } from "../types";
 import { mintToken, heldCount, logToken } from "../engine/tokens";
+import { refreshMember } from "../engine/gamification";
 import { sendMail } from "./mail";
 import {
   tokenMintedEmail,
@@ -54,6 +55,7 @@ export function invoicePaid(db: DataStore, memberId: string, isFirst = false): W
   }
 
   const token = mintToken(db, memberId, "subscription");
+  refreshMember(db, member); // streak/badge upkeep + release any queued bonus
 
   // Attach to a pending prebook if one is waiting (§5 prebook).
   const prebook = db.bookings.find(

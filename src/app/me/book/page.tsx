@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/data/db";
 import { memberVisibleSlots, weekendVisibleSlots } from "@/lib/engine/booking";
 import { weekdayStatus, DOW_SHORT } from "@/lib/engine/schedule";
+import { hasPriority } from "@/lib/engine/gamification";
 import { getWallet } from "@/lib/data/member";
 import { fmtDay, fmtTime, gbp } from "@/lib/format";
 import { bookSlotAction, bookWeekendUpgradeAction, bookWeekendPaidAction } from "./actions";
@@ -28,7 +29,8 @@ export default async function MemberBookPage({
   const db = await getDb();
   const wallet = (await getWallet(session.member.id))!;
   const available = wallet.tokens.filter((t) => t.state === "ISSUED").length;
-  const slots = memberVisibleSlots(db);
+  const priority = hasPriority(session.member) ? 24 : 0;
+  const slots = memberVisibleSlots(db, priority);
   const weekend = weekendVisibleSlots(db);
   const weekStatus = [1, 2, 3, 4, 5].map((d) => ({ d, status: weekdayStatus(db, d) }));
 
@@ -49,6 +51,11 @@ export default async function MemberBookPage({
           <span className="value">{available}</span> token{available === 1 ? "" : "s"} ready · 45 min · booking freezes the clock
         </span>
       </div>
+      {priority > 0 && (
+        <p className="num mt-2 inline-flex items-center gap-1.5 rounded-full bg-mist px-3 py-1 text-xs">
+          <span className="value">★ Priority</span> — you see new slots 24h early
+        </p>
+      )}
 
       {/* This week's availability — hidden days simply read as unavailable */}
       <div className="mt-5 grid grid-cols-6 gap-1.5">

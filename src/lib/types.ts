@@ -73,6 +73,7 @@ export interface Member {
   // Gamification
   streak_months?: number;
   badges?: string[];
+  pending_bonus?: number; // bonus tokens queued while the wallet was full
 }
 
 export interface Subscription {
@@ -154,6 +155,7 @@ export interface Gift {
   returned_at: ISODate | null;
   opened_at?: ISODate | null;
   status: GiftStatus;
+  converted?: boolean; // recipient became a member → gifter rewarded (referral)
 }
 
 export interface SlotSuggestion {

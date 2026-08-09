@@ -3,6 +3,7 @@ import { getDb } from "./db";
 import type { Token, Booking, Slot, Gift, Pence } from "../types";
 import { daysBetween, firstOfNextMonth } from "../format";
 import { memberVisibleSlots } from "../engine/booking";
+import { hasPriority } from "../engine/gamification";
 
 export interface WalletToken extends Token {
   lifeFraction: number; // 0..1 remaining, for the countdown ring
@@ -42,6 +43,8 @@ export interface Wallet {
   trialCredit: Pence;
   trialCreditValid: boolean;
   hasTrialBooking: boolean;
+  pendingBonus: number;
+  priority: boolean;
 }
 
 export async function getWallet(memberId: string): Promise<Wallet | null> {
@@ -134,6 +137,8 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
     hasTrialBooking: db.bookings.some(
       (b) => b.member_id === memberId && (b.kind === "one_off" || b.kind === "weekend_oneoff") && b.status === "confirmed",
     ),
+    pendingBonus: m.pending_bonus ?? 0,
+    priority: hasPriority(m),
   };
 }
 
@@ -170,7 +175,8 @@ export async function getUsual(memberId: string): Promise<UsualSlot | null> {
   const [dowStr, time] = bestKey.split("|");
   const dow = Number(dowStr);
 
-  const nextSlot = memberVisibleSlots(db)
+  const priority = hasPriority(db.members.find((x) => x.id === memberId)) ? 24 : 0;
+  const nextSlot = memberVisibleSlots(db, priority)
     .filter(
       (s) => new Date(s.starts_at).getUTCDay() === dow && s.starts_at.slice(11, 16) === time,
     )
@@ -188,7 +194,8 @@ export interface ComingUpSlot {
 export async function getComingUp(memberId: string, limit = 6): Promise<ComingUpSlot[]> {
   const db = await getDb();
   const usual = await getUsual(memberId);
-  return memberVisibleSlots(db)
+  const priority = hasPriority(db.members.find((x) => x.id === memberId)) ? 24 : 0;
+  return memberVisibleSlots(db, priority)
     .slice(0, limit)
     .map((slot) => ({
       slot,

@@ -4,6 +4,7 @@ import { addDays } from "../format";
 import { expireDueTokens } from "./tokens";
 import { returnLapsedGifts } from "./gifts";
 import { invoicePaid, processPaymentTimeline } from "../adapters/payments";
+import { refreshAll } from "./gamification";
 
 /**
  * The mock clock (§3). Advancing it drives every time-based rule so expiry,
@@ -39,6 +40,7 @@ function tickOneDay(db: DataStore): TickReport {
   const expired = expireDueTokens(db);
   const giftsReturned = returnLapsedGifts(db);
   const timeline = processPaymentTimeline(db);
+  refreshAll(db); // streaks, milestone badges, queued bonus tokens
 
   return { expired, giftsReturned, billed, timeline };
 }

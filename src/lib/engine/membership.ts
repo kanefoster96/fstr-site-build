@@ -1,6 +1,7 @@
 import "server-only";
 import type { DataStore, Member, Subscription, AvailabilityFlag, Pence } from "../types";
 import { addDays } from "../format";
+import { maybeRewardReferrer, refreshMember } from "./gamification";
 
 /** Seats, scarcity, the pricing ladder (§6). */
 
@@ -93,6 +94,8 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
   };
   db.members.push(member);
   db.subscriptions.push(subscription);
+  maybeRewardReferrer(db, member.email); // arrived via a mate's gift?
+  refreshMember(db, member);
   return { member, subscription, seat, rate };
 }
 
@@ -185,6 +188,8 @@ export function upgradeToMembership(
     past_due_since: null,
     retry_count: 0,
   });
+  maybeRewardReferrer(db, m.email); // trial user who was gifted → reward gifter
+  refreshMember(db, m);
   return { seat, rate };
 }
 

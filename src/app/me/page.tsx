@@ -93,6 +93,15 @@ export default async function WalletPage({
                 ? `Seat ${wallet.seat} · ${wallet.badges.join(" · ") || "Member"}`
                 : "Exploring · not a member yet"}
             </p>
+            {(wallet.priority || wallet.pendingBonus > 0) && (
+              <p className="num mt-1 text-xs">
+                {wallet.priority && <span className="value">★ Priority booking</span>}
+                {wallet.priority && wallet.pendingBonus > 0 && <span className="text-steel"> · </span>}
+                {wallet.pendingBonus > 0 && (
+                  <span className="value">🎁 {wallet.pendingBonus} free cut{wallet.pendingBonus === 1 ? "" : "s"} queued</span>
+                )}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex gap-2 text-sm">

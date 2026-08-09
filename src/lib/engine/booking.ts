@@ -17,9 +17,10 @@ function bookingId(): string {
  * and EITHER on a currently-open weekday (staged, backwards-from-Friday) OR
  * within the last-minute window — so hidden days still get taken close-in.
  */
-export function memberVisibleSlots(db: DataStore): Slot[] {
+export function memberVisibleSlots(db: DataStore, priorityHours = 0): Slot[] {
   const now = Date.parse(db.clock.now);
   const open = revealedWeekdays(db);
+  const early = priorityHours * 3600_000; // 6/12-month members get 24h early
   return db.slots
     .filter(
       (s) =>
@@ -27,7 +28,7 @@ export function memberVisibleSlots(db: DataStore): Slot[] {
         !s.booked &&
         s.day_type === "weekday" &&
         Date.parse(s.starts_at) > now &&
-        Date.parse(s.release_at) <= now &&
+        Date.parse(s.release_at) - early <= now &&
         (open.includes(new Date(s.starts_at).getUTCDay()) || isLastMinute(db, s.starts_at)),
     )
     .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
