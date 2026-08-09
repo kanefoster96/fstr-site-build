@@ -6,7 +6,9 @@ import Coin from "./Coin";
  * stills under reduced-motion. Remove by dropping <PromoBanner/> from the layout.
  */
 const MESSAGE = "Book with a friend — get a free token";
-const PER_COPY = 4;
+// Enough messages per copy that one copy overflows any screen — required for the
+// two-copy translateX(-50%) loop to be seamless.
+const PER_COPY = 8;
 
 export default function PromoBanner() {
   return (
@@ -14,7 +16,7 @@ export default function PromoBanner() {
       <span className="sr-only">{MESSAGE}</span>
       <div
         aria-hidden
-        className="flex w-max animate-marquee whitespace-nowrap py-2 [animation-duration:22s] group-hover:[animation-play-state:paused]"
+        className="flex w-max animate-marquee whitespace-nowrap py-2 will-change-transform [animation-duration:44s] group-hover:[animation-play-state:paused]"
       >
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0">
