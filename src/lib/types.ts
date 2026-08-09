@@ -62,6 +62,8 @@ export interface Member {
   seat_number: number | null; // null while on waitlist
   status: MemberStatus;
   role: Role;
+  // Auth — salted hash of the member's password ("salt:hash"). Set at sign-up.
+  password_hash?: string;
   // Preferences / personalisation
   usual_cut?: string;
   notes?: string; // barber-facing notes

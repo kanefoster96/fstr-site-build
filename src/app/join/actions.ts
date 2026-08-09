@@ -9,16 +9,19 @@ import {
   createGuestAccount,
   grantTrialCredit,
   fromPrice,
+  emailTaken,
 } from "@/lib/engine/membership";
 import { invoicePaid } from "@/lib/adapters/payments";
 import { bookWithToken } from "@/lib/engine/booking";
 import { mintToken } from "@/lib/engine/tokens";
+import { hashPassword } from "@/lib/password";
 import { sendMail } from "@/lib/adapters/mail";
 import { bookingConfirmedEmail, oneOffFollowUpEmail } from "@/lib/emails";
 
 export interface OnboardData {
   name: string;
   email: string;
+  password: string;
   avatarUrl: string | null;
   frequencyWeeks: number;
   planWeeks: number;
@@ -29,7 +32,9 @@ export interface OnboardData {
 /** Start a membership: account + subscription at the chosen cadence, first
  *  token minted, and their chosen first cut booked. */
 export async function completeMembership(data: OnboardData) {
+  const passwordHash = hashPassword(data.password);
   const outcome = await mutate((db) => {
+    if (emailTaken(db, data.email)) return { exists: true as const };
     const result = join(db, {
       name: data.name,
       email: data.email,
@@ -39,6 +44,7 @@ export async function completeMembership(data: OnboardData) {
       avatarUrl: data.avatarUrl,
       usualCut: data.usualCut || undefined,
       frequencyWeeks: data.frequencyWeeks,
+      passwordHash,
     });
     if (!result) return { full: true as const };
 
@@ -56,6 +62,7 @@ export async function completeMembership(data: OnboardData) {
     return { full: false as const, memberId: result.member.id };
   });
 
+  if (outcome.exists) redirect("/signin?error=exists");
   if (outcome.full) redirect("/join?waitlisted=1");
   await setSession(outcome.memberId, "member");
   revalidatePath("/me");
@@ -67,13 +74,16 @@ export async function completeMembership(data: OnboardData) {
  *  member's: pay, earn a token, spend it. No subscription; banks a credit toward
  *  a same-day membership. */
 export async function completeOneOff(data: OnboardData) {
-  const memberId = await mutate((db) => {
+  const passwordHash = hashPassword(data.password);
+  const outcome = await mutate((db) => {
+    if (emailTaken(db, data.email)) return { exists: true as const };
     const member = createGuestAccount(db, {
       name: data.name,
       email: data.email,
       avatarUrl: data.avatarUrl,
       usualCut: data.usualCut || undefined,
       frequencyWeeks: data.frequencyWeeks,
+      passwordHash,
     });
 
     // The £35 mints one token (recorded as a paid one-off purchase).
@@ -93,26 +103,31 @@ export async function completeOneOff(data: OnboardData) {
     const credit = Math.max(0, db.settings.oneoff_price - db.settings.current_rate);
     grantTrialCredit(db, member.id, credit);
     sendMail(db, "oneoff_followup", data.email, oneOffFollowUpEmail(fromPrice(db)));
-    return member.id;
+    return { exists: false as const, memberId: member.id };
   });
 
-  await setSession(memberId, "member");
+  if (outcome.exists) redirect("/signin?error=exists");
+  await setSession(outcome.memberId, "member");
   revalidatePath("/me");
   redirect("/me?trial=1");
 }
 
 /** Skip payment for now — create the account and land on the dashboard. */
 export async function completeSkip(data: OnboardData) {
-  const memberId = await mutate((db) =>
-    createGuestAccount(db, {
+  const passwordHash = hashPassword(data.password);
+  const outcome = await mutate((db) => {
+    if (emailTaken(db, data.email)) return { exists: true as const };
+    return { exists: false as const, memberId: createGuestAccount(db, {
       name: data.name,
       email: data.email,
       avatarUrl: data.avatarUrl,
       usualCut: data.usualCut || undefined,
       frequencyWeeks: data.frequencyWeeks,
-    }).id,
-  );
-  await setSession(memberId, "member");
+      passwordHash,
+    }).id };
+  });
+  if (outcome.exists) redirect("/signin?error=exists");
+  await setSession(outcome.memberId, "member");
   revalidatePath("/me");
   redirect("/me?explore=1");
 }

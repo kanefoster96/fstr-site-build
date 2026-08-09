@@ -78,8 +78,8 @@ const FAQS: { q: string; a: string }[] = [
     a: "Anytime. Cancel 24+ hours before and your token comes back; any unused tokens stay yours until they run out.",
   },
   {
-    q: "Do I need a password?",
-    a: "No — your email is your key. Sign in any time with the email you joined with.",
+    q: "How do I sign in?",
+    a: "With the email and password you set when you joined — that keeps your tokens and details yours.",
   },
 ];
 

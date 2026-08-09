@@ -51,6 +51,7 @@ export interface JoinInput {
   avatarUrl?: string | null;
   usualCut?: string;
   frequencyWeeks?: number;
+  passwordHash?: string;
 }
 
 export interface JoinResult {
@@ -83,6 +84,7 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
     seat_number: seat,
     status: "active",
     role: "member",
+    password_hash: input.passwordHash,
     usual_cut: input.usualCut,
     cut_frequency_weeks: input.frequencyWeeks,
     streak_months: 0,
@@ -119,6 +121,7 @@ export interface GuestInput {
   avatarUrl?: string | null;
   usualCut?: string;
   frequencyWeeks?: number;
+  passwordHash?: string;
 }
 
 /**
@@ -139,6 +142,7 @@ export function createGuestAccount(db: DataStore, input: GuestInput): Member {
     seat_number: null, // no seat until they subscribe
     status: "active",
     role: "member",
+    password_hash: input.passwordHash,
     usual_cut: input.usualCut,
     cut_frequency_weeks: input.frequencyWeeks,
     streak_months: 0,
@@ -146,6 +150,12 @@ export function createGuestAccount(db: DataStore, input: GuestInput): Member {
   };
   db.members.push(member);
   return member;
+}
+
+/** True if a real (password-holding) account already uses this email. */
+export function emailTaken(db: DataStore, email: string): boolean {
+  const e = email.trim().toLowerCase();
+  return db.members.some((m) => m.email.trim().toLowerCase() === e && !!m.password_hash);
 }
 
 export function hasSubscription(db: DataStore, memberId: string): boolean {

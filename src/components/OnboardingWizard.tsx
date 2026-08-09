@@ -36,6 +36,7 @@ export default function OnboardingWizard({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<number>(4);
   const [slotId, setSlotId] = useState<string | null>(null);
@@ -45,10 +46,11 @@ export default function OnboardingWizard({
   const [phase, setPhase] = useState<"choose" | "paying" | "paid">("choose");
 
   const STEPS = ["You", "How often", "First cut", "Ready"];
-  const canNext = step === 0 ? !!(name.trim() && email.trim()) : true;
+  const canNext = step === 0 ? !!(name.trim() && email.trim() && password.length >= 8) : true;
   const data: OnboardData = {
     name: name.trim(),
     email: email.trim(),
+    password,
     avatarUrl: avatar,
     frequencyWeeks: frequency,
     planWeeks: frequency, // frequency sets the plan — and the price
@@ -122,7 +124,10 @@ export default function OnboardingWizard({
 
             <Field label="Your name" value={name} onChange={setName} placeholder="Danny Robson" />
             <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="danny@example.com" />
-            <p className="num text-[11px] text-steel">No password needed — sign back in any time with your email.</p>
+            <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" />
+            <p className="num text-[11px] text-steel">
+              You&apos;ll use your email and password to sign back in and manage your tokens.
+            </p>
           </Step>
         )}
 

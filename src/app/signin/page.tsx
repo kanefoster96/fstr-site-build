@@ -9,8 +9,9 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Sign in — FSTR" };
 
 const ERRORS: Record<string, string> = {
-  empty: "Pop your email in to sign in.",
-  notfound: "No account with that email yet — create one below.",
+  empty: "Enter your email and password to sign in.",
+  invalid: "That email and password don't match. Try again.",
+  exists: "You already have an account with that email — sign in below.",
 };
 
 export default async function SignInPage({
@@ -30,7 +31,7 @@ export default async function SignInPage({
           <div className="mt-6"><Eyebrow>Welcome back</Eyebrow></div>
           <h1 className="mt-2 font-display text-4xl font-bold">Sign in</h1>
           <p className="mx-auto mt-2 max-w-xs text-steel">
-            No password — your email is your key. Enter the one you joined with.
+            Enter the email and password you joined with.
           </p>
         </div>
 
@@ -52,6 +53,17 @@ export default async function SignInPage({
               className="mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2.5 text-sm outline-none focus:border-brass"
             />
           </label>
+          <label className="block">
+            <span className="text-sm font-medium">Password</span>
+            <input
+              type="password"
+              name="password"
+              required
+              autoComplete="current-password"
+              placeholder="Your password"
+              className="mt-1 w-full rounded-lg border border-steel/40 bg-paper px-3 py-2.5 text-sm outline-none focus:border-brass"
+            />
+          </label>
           <button
             type="submit"
             className="w-full rounded-full bg-ink py-3 text-sm font-semibold text-paper"
@@ -59,7 +71,7 @@ export default async function SignInPage({
             Sign in
           </button>
           <p className="num text-center text-[11px] text-steel">
-            Mock sign-in — we just match your email, no real auth yet.
+            Mock auth — passwords are salted and hashed, not stored in the clear.
           </p>
         </form>
 
