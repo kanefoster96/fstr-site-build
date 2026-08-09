@@ -5,15 +5,16 @@ import Coin from "./Coin";
 
 type Variant = "gold" | "silver" | "ghost" | "avatar";
 const BASE = 120; // the coin renders at 120 and is scaled to each dock's size
-const HOP = 560; // ms — the confident spin-and-land between docks
+const HOP = 560; // ms — the confident spin-and-land between placements
+const MARGIN = 64; // px — how much closer a new dock must be before we commit
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 /**
- * One coin for the whole homepage. It sits exactly on the section it's landed
- * in (moving with the page as you scroll — no floating), then when you scroll
- * far enough that a new section takes over, it spins a full turn and lands on
- * that section's placement. Morphs gold → used → silver, and into Adam's
- * avatar in his story. Respects prefers-reduced-motion (snaps, no spin).
+ * One coin for the whole homepage. It stays PINNED wherever it landed (fixed on
+ * screen — it does not drift as you scroll), and only moves when a new section
+ * clearly takes over: then it spins a full turn and lands on that section's
+ * placement. Morphs gold → used → silver, and into Adam's avatar in his story.
+ * Respects prefers-reduced-motion (snaps, no spin).
  */
 export default function CoinJourney() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,7 @@ export default function CoinJourney() {
     const st = {
       landed: null as HTMLElement | null,
       target: null as HTMLElement | null,
+      hopping: false,
       hopStart: 0,
       fromX: 0,
       fromY: 0,
@@ -46,24 +48,27 @@ export default function CoinJourney() {
         y: r.top + r.height / 2,
         s: (Number(el.dataset.size) || 76) / BASE,
         v: (el.dataset.variant as Variant) || "gold",
+        dist: Math.abs(r.top + r.height / 2 - window.innerHeight * 0.42),
       };
     };
 
-    function activeDock(): HTMLElement | null {
+    /** Nearest dock to the reading line, but only switch off the current one
+     *  when a new dock is clearly closer (hysteresis → commits, no jitter). */
+    function activeDock(current: HTMLElement | null): HTMLElement | null {
       const list = document.querySelectorAll<HTMLElement>("[data-coin-dock]");
       if (!list.length) return null;
-      const focal = window.innerHeight * 0.42;
       let best: HTMLElement | null = null;
       let bd = Infinity;
       list.forEach((el) => {
-        const r = el.getBoundingClientRect();
-        const c = r.top + r.height / 2;
-        const d = Math.abs(c - focal);
+        const d = read(el).dist;
         if (d < bd) {
           bd = d;
           best = el;
         }
       });
+      if (current && current !== best) {
+        if (read(current).dist - bd < MARGIN) return current; // stay put
+      }
       return best;
     }
 
@@ -75,23 +80,27 @@ export default function CoinJourney() {
     };
 
     function frame(now: number) {
-      const active = activeDock();
       const wrap = wrapRef.current;
+      const active = activeDock(st.landed);
       if (active && wrap) {
         if (hidden) setHidden(false);
 
         if (!st.inited || reduce) {
-          const c = read(active);
-          st.landed = active;
-          st.target = active;
-          st.x = c.x;
-          st.y = c.y;
-          st.scale = c.s;
-          st.rot = 0;
-          st.inited = true;
-          setV(c.v);
+          // first paint, or reduced-motion: snap onto the active dock, no spin
+          if (!st.inited || active !== st.landed) {
+            const c = read(active);
+            st.landed = active;
+            st.target = active;
+            st.x = c.x;
+            st.y = c.y;
+            st.scale = c.s;
+            st.rot = 0;
+            st.inited = true;
+            st.hopping = false;
+            setV(c.v);
+          }
         } else {
-          // a new section took over → launch a hop toward it
+          // a new section took over → begin (or retarget) a spin-hop
           if (active !== st.target) {
             st.fromX = st.x;
             st.fromY = st.y;
@@ -99,30 +108,26 @@ export default function CoinJourney() {
             st.fromRot = st.rot;
             st.target = active;
             st.hopStart = now;
+            st.hopping = true;
           }
 
-          if (st.landed !== st.target && st.target) {
+          if (st.hopping && st.target) {
             const t = Math.min(1, (now - st.hopStart) / HOP);
             const e = easeInOut(t);
-            const c = read(st.target); // live — the dock keeps moving with scroll
+            const c = read(st.target); // live — the dock moves with scroll
             st.x = st.fromX + (c.x - st.fromX) * e;
             st.y = st.fromY + (c.y - st.fromY) * e;
             st.scale = st.fromScale + (c.s - st.fromScale) * e;
             st.rot = st.fromRot + 360 * e; // one confident full turn
             if (t > 0.5) setV(c.v); // change mid-spin
             if (t >= 1) {
+              st.hopping = false;
               st.landed = st.target;
               st.rot = Math.round(st.rot / 360) * 360; // land upright
               setV(c.v);
             }
-          } else if (st.landed) {
-            // landed — sit exactly on the placement (moves with the page)
-            const c = read(st.landed);
-            st.x = c.x;
-            st.y = c.y;
-            st.scale = c.s;
-            setV(c.v);
           }
+          // when not hopping: hold x/y/scale exactly — pinned, no drift
         }
 
         const rot = vRef.current === "avatar" ? 0 : st.rot;
