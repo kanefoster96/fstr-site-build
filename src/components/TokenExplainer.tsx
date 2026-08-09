@@ -83,7 +83,6 @@ export default function TokenExplainer() {
           >
             <Coin
               size={132}
-              live={!reduced && stage <= 1}
               flipped={stage === 4}
               code={stage === 4 ? "BRASS-7Q2" : undefined}
               ring={stage === 3 ? 0.55 : undefined}

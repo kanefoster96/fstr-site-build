@@ -130,7 +130,7 @@ export default async function WalletPage({
               </p>
               <form action={upgradeMembershipAction} className="mt-4">
                 <input type="hidden" name="cycle_weeks" value={session.member.cut_frequency_weeks ?? 4} />
-                <button className="rounded-full bg-brass px-6 py-2.5 text-sm font-medium text-paper">
+                <button className="rounded-full bg-brass px-6 py-2.5 text-sm font-medium text-ink">
                   Join — {gbp(wallet.trialCreditValid ? Math.max(0, wallet.currentRate - wallet.trialCredit) : wallet.currentRate)} now
                 </button>
               </form>
@@ -260,7 +260,7 @@ export default async function WalletPage({
                 </p>
                 <AnimatedSubmit action={quickBookAction} anim="use" className="mt-4">
                   <input type="hidden" name="slot_id" value={usualSlot.id} />
-                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-paper">
+                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-ink">
                     <span data-coin style={{ display: "inline-block" }}>
                       <Coin size={30} />
                     </span>
@@ -274,7 +274,7 @@ export default async function WalletPage({
                 <p className="num mt-1 text-xl">{fmtDateTime(soonest.starts_at)}</p>
                 <AnimatedSubmit action={quickBookAction} anim="use" className="mt-4">
                   <input type="hidden" name="slot_id" value={soonest.id} />
-                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-paper">
+                  <button className="flex w-full items-center justify-center gap-3 rounded-full bg-brass px-5 py-3 font-medium text-ink">
                     <span data-coin style={{ display: "inline-block" }}>
                       <Coin size={30} />
                     </span>

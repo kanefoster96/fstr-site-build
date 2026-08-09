@@ -62,7 +62,7 @@ export default function GiftOnlyCard({
               type="button"
               disabled={busy}
               onClick={send}
-              className="flex-1 rounded-full bg-brass px-4 py-2 text-sm font-medium text-paper disabled:opacity-60"
+              className="flex-1 rounded-full bg-brass px-4 py-2 text-sm font-medium text-ink disabled:opacity-60"
             >
               Send it
             </button>

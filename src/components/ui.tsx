@@ -48,7 +48,7 @@ const btnBase =
 
 const variants = {
   primary:
-    "bg-brass text-paper hover:bg-[var(--brass-dark)] focus-visible:outline-brass",
+    "bg-brass text-ink hover:bg-[var(--brass-dark)] focus-visible:outline-brass",
   ghost:
     "border border-steel/60 text-ink hover:border-ink hover:bg-mist",
   quiet: "text-steel hover:text-ink",

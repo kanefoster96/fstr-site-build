@@ -43,7 +43,7 @@ export default async function HomePage() {
 
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
-              <Coin size={260} live />
+              <Coin size={260} />
               <div className="absolute -bottom-3 left-1/2 h-6 w-40 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
             </div>
           </div>

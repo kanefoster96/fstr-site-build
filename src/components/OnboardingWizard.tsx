@@ -148,7 +148,7 @@ export default function OnboardingWizard({
                     type="button"
                     onClick={() => setPlanWeeks(w)}
                     className={`num rounded-full px-4 py-2 text-sm ${
-                      planWeeks === w ? "bg-brass text-paper" : "border border-steel/50 hover:border-ink"
+                      planWeeks === w ? "bg-brass text-ink" : "border border-steel/50 hover:border-ink"
                     }`}
                   >
                     {w} wks
@@ -211,7 +211,7 @@ export default function OnboardingWizard({
               type="button"
               disabled={pending}
               onClick={() => go(completeMembership)}
-              className="w-full rounded-2xl bg-brass p-4 text-left text-paper disabled:opacity-60"
+              className="w-full rounded-2xl bg-brass p-4 text-left text-ink disabled:opacity-60"
             >
               <span className="flex items-center justify-between">
                 <span className="font-medium">Start membership</span>

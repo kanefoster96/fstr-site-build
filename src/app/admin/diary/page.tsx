@@ -70,7 +70,7 @@ export default async function DiaryPage() {
                 <form key={d} action={toggleDayAction} className="flex items-center justify-between">
                   <input type="hidden" name="day" value={d} />
                   <span className="text-sm">{label}</span>
-                  <button className={`num rounded-full px-4 py-1.5 text-xs ${open ? "bg-brass text-paper" : "border border-steel/40 text-steel"}`}>
+                  <button className={`num rounded-full px-4 py-1.5 text-xs ${open ? "bg-brass text-ink" : "border border-steel/40 text-steel"}`}>
                     {open ? "Open" : "Closed"}
                   </button>
                 </form>
@@ -88,7 +88,7 @@ export default async function DiaryPage() {
               {(["saturday", "sunday"] as const).map((w) => (
                 <form key={w} action={setWeekendDayAction}>
                   <input type="hidden" name="weekend_day" value={w} />
-                  <button className={`num rounded-full px-4 py-1.5 text-xs capitalize ${s.weekend_day === w ? "bg-brass text-paper" : "border border-steel/40 text-steel"}`}>
+                  <button className={`num rounded-full px-4 py-1.5 text-xs capitalize ${s.weekend_day === w ? "bg-brass text-ink" : "border border-steel/40 text-steel"}`}>
                     {w}
                   </button>
                 </form>

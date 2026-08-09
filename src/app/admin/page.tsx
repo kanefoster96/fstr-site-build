@@ -79,7 +79,7 @@ export default async function AdminTodayPage() {
               <span className="num rounded-full bg-mist px-3 py-1 text-[10px] uppercase tracking-wide">
                 {token?.state ?? (booking.kind === "prebook_pending" ? "prebook" : "one-off")}
               </span>
-              <Link href="/admin/scan" className="num rounded-full bg-brass px-4 py-2 text-xs font-medium text-paper">
+              <Link href="/admin/scan" className="num rounded-full bg-brass px-4 py-2 text-xs font-medium text-ink">
                 Scan QR
               </Link>
             </div>

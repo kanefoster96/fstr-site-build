@@ -59,10 +59,10 @@ export default function ActiveTokenCard({
       <span
         ref={coinRef}
         data-coin
-        className={busy ? "" : "animate-float"}
+        className=""
         style={{ display: "inline-block" }}
       >
-        <Coin size={104} ring={lifeFraction} live />
+        <Coin size={104} ring={lifeFraction} />
       </span>
 
       <p className="num mt-3 text-sm">
@@ -78,14 +78,14 @@ export default function ActiveTokenCard({
               type="button"
               disabled={busy}
               onClick={() => play("use", useForm.current)}
-              className="w-full rounded-full bg-brass px-4 py-2.5 text-sm font-medium text-paper disabled:opacity-60"
+              className="w-full rounded-full bg-brass px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-60"
             >
               Use it{soonestSlotLabel ? ` · ${soonestSlotLabel}` : ""}
             </button>
           ) : (
             <a
               href="/me/book"
-              className="w-full rounded-full bg-brass px-4 py-2.5 text-sm font-medium text-paper"
+              className="w-full rounded-full bg-brass px-4 py-2.5 text-sm font-medium text-ink"
             >
               Book a slot
             </a>
@@ -113,7 +113,7 @@ export default function ActiveTokenCard({
               type="button"
               disabled={busy}
               onClick={() => play("send", giftForm.current)}
-              className="flex-1 rounded-full bg-brass px-4 py-2 text-sm font-medium text-paper disabled:opacity-60"
+              className="flex-1 rounded-full bg-brass px-4 py-2 text-sm font-medium text-ink disabled:opacity-60"
             >
               Send it
             </button>

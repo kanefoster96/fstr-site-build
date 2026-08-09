@@ -29,7 +29,7 @@ export default function PlanPicker({
                 disabled={isCurrent || locked}
                 className={`num rounded-full px-4 py-2 text-sm transition-colors ${
                   isCurrent
-                    ? "bg-brass text-paper"
+                    ? "bg-brass text-ink"
                     : locked
                       ? "border border-steel/30 text-steel/50"
                       : "border border-steel/50 text-ink hover:border-ink hover:bg-mist"

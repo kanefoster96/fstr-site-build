@@ -41,7 +41,7 @@ export default function ChatOfferCard({
         <div className="mt-3 flex gap-2">
           <form action={acceptAction}>
             <input type="hidden" name="message_id" value={message.id} />
-            <button className="rounded-full bg-brass px-4 py-2 text-xs font-medium text-paper">Accept</button>
+            <button className="rounded-full bg-brass px-4 py-2 text-xs font-medium text-ink">Accept</button>
           </form>
           {declineAction && (
             <form action={declineAction}>
