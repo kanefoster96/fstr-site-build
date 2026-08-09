@@ -9,6 +9,7 @@ export default function AdminNav() {
     ["/admin/members", "Members"],
     ["/admin/numbers", "Numbers"],
     ["/admin/scan", "Scan"],
+    ["/admin/settings", "Settings"],
   ];
   return (
     <nav className="-mx-5 flex gap-1 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
