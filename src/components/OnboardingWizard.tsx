@@ -131,16 +131,16 @@ export default function OnboardingWizard({
 
         {/* Step 2 — plan */}
         {step === 2 && (
-          <Step title="Your plan" blurb="A token drops every cycle. Every plan's the same price — pick the pace that fits.">
+          <Step title="Your plan" blurb="Your cut comes as often as you like — pick the pace that suits you. Same price whichever you choose.">
             <div className="flex items-center gap-3 rounded-2xl bg-mist p-4">
               <Coin size={48} />
               <div>
                 <p className="num text-2xl font-semibold value">{gbp(rate)}</p>
-                <p className="num text-xs text-steel">per token · every plan</p>
+                <p className="num text-xs text-steel">per cut · every plan</p>
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium">A token every…</p>
+              <p className="text-sm font-medium">A cut every…</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {plans.map((w) => (
                   <button
@@ -202,7 +202,7 @@ export default function OnboardingWizard({
             <div className="rounded-xl bg-mist p-3 text-sm">
               <p className="num text-steel">
                 {selectedSlot ? `First cut: ${selectedSlot.day} ${selectedSlot.time}` : "First cut: pick later"}
-                {" · "}token every {planWeeks} wks
+                {" · "}cut every {planWeeks} wks
               </p>
             </div>
 
@@ -218,7 +218,7 @@ export default function OnboardingWizard({
                 <span className="num">{gbp(rate)}/cycle</span>
               </span>
               <span className="mt-0.5 block text-sm text-paper/80">
-                Your first token now, and {selectedSlot ? "your cut booked in" : "book whenever suits"}.
+                Your first cut now, and {selectedSlot ? "your appointment booked in" : "book whenever suits"}.
               </span>
             </button>
 
@@ -235,7 +235,7 @@ export default function OnboardingWizard({
               </span>
               <span className="mt-0.5 block text-sm text-steel">
                 One-off, no commitment. Like it and join on the day — we knock{" "}
-                {gbp(oneOffPrice - rate)} off your first token.
+                {gbp(oneOffPrice - rate)} off your first cut.
               </span>
             </button>
 

@@ -8,10 +8,10 @@ export default function SiteFooter() {
         <Hairline className="mb-8" />
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-xs">
-            <p className="font-display text-xl font-bold">FSTR Cuts</p>
+            <p className="font-display text-xl font-bold">FSTR</p>
             <p className="mt-2 text-sm text-steel">
-              The home-worker&apos;s barber. Wallsend area — exact address sent 24 hours
-              before your cut.
+              Private home barbering, Wallsend area. The exact address is sent 24 hours
+              before your appointment.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
@@ -26,7 +26,7 @@ export default function SiteFooter() {
           </div>
         </div>
         <p className="mt-10 text-xs text-steel">
-          © {2026} FSTR Cuts · North Tyneside, UK · One barber, quality cuts, no corners.
+          © {2026} FSTR · North Tyneside, UK · One barber. No rushing. Done properly.
         </p>
       </Container>
     </footer>

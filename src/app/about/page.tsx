@@ -1,6 +1,6 @@
 import { Container, Button, Eyebrow, Card } from "@/components/ui";
 
-export const metadata = { title: "The Chair — FSTR Cuts" };
+export const metadata = { title: "The Chair — FSTR" };
 
 export default function AboutPage() {
   return (
@@ -8,16 +8,18 @@ export default function AboutPage() {
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="aspect-[4/5] rounded-3xl bg-[linear-gradient(135deg,#e7e5df,#d5d3cb)]" aria-hidden />
         <div>
-          <Eyebrow>The chair</Eyebrow>
-          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">Kane.</h1>
+          <Eyebrow>The Chair</Eyebrow>
+          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">
+            Just you, me and enough time to get it right.
+          </h1>
           <p className="mt-4 text-lg text-steel">
-            One barber, one chair, a proper home studio in the Wallsend area. No queue, no
-            walk-ins, no rush — just a good cut on a quiet weekday while the high street&apos;s
-            rammed.
+            FSTR is my private home barber studio in the Wallsend area. There&apos;s one chair, no
+            crowded waiting area and no queue building behind you.
           </p>
           <p className="mt-4 text-steel">
-            I keep it small on purpose. 130 seats, that&apos;s it. It means I know your name, your
-            usual, and I&apos;m never running 40 minutes behind. Quality cuts, no corners.
+            We&apos;ll talk through exactly what you want, I&apos;ll take the time to make sure
+            you&apos;re happy, and I&apos;ll save the details of your cut — the lengths, the blend, how
+            you like it styled — so we get it right again next time.
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -31,13 +33,14 @@ export default function AboutPage() {
             <Card className="!bg-mist">
               <p className="text-sm font-medium">The address</p>
               <p className="mt-1 text-sm text-steel">
-                It&apos;s my home, so the exact address stays private — it lands 24 hours before your
-                cut, with the door and parking notes.
+                It&apos;s my home, so the exact address stays private — it&apos;s sent 24 hours before
+                your appointment, with the door and parking notes.
               </p>
             </Card>
           </div>
 
-          <Button href="/join" className="mt-8">Take a seat</Button>
+          <p className="mt-6 font-display text-lg font-semibold">— Adam</p>
+          <Button href="/join" className="mt-6">Join FSTR</Button>
         </div>
       </div>
     </Container>

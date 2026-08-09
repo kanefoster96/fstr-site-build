@@ -4,15 +4,15 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "FSTR Cuts — one cut a month, never wasted",
+  title: "FSTR — a proper cut, done properly",
   description:
-    "Membership home barbering in North Tyneside. £25/month, one cut a month, tokens roll over and can be gifted. You never lose a cut you've paid for.",
-  applicationName: "FSTR Cuts",
+    "Private home barbering in North Tyneside. One barber, one chair, enough time to get your cut right — and your cut saved for next time. £25 a month.",
+  applicationName: "FSTR",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "FSTR Cuts", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "FSTR", statusBarStyle: "default" },
   openGraph: {
-    title: "FSTR Cuts — one cut a month, never wasted",
-    description: "The home-worker's barber. Get a proper cut on a quiet weekday lunchtime.",
+    title: "FSTR — a proper cut, done properly",
+    description: "A barber who listens, takes his time and remembers exactly how you like it.",
     type: "website",
   },
 };

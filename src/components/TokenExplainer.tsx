@@ -10,11 +10,11 @@ import Coin from "./Coin";
  * when reduced motion is set we render the resting end-state of each step.
  */
 const STEPS = [
-  { key: "join", title: "Join", body: "£25/month. Your seat is yours." },
-  { key: "drop", title: "A token drops", body: "One cut, minted on your billing day. 60 days to use it." },
-  { key: "book", title: "Book it — or message him", body: "Slides onto a weekday slot. The clock freezes the moment you book." },
-  { key: "rollover", title: "Can't make it? It rolls over", body: "Never silently disappears. You've got two full billing cycles." },
-  { key: "gift", title: "Still can't? Gift it to a mate", body: "One tap, a code, done. A cut you paid for is never wasted." },
+  { key: "join", title: "Join", body: "£25 a month — one full haircut and a beard tidy, every month." },
+  { key: "added", title: "Your cut is added", body: "A haircut lands in your account on your billing date. You've got 60 days to use it." },
+  { key: "book", title: "Book your time", body: "Pick a weekday appointment up to two weeks ahead. Can't see the time you need? Just message me." },
+  { key: "saved", title: "I save your cut", body: "Once we get it right, I save the lengths, details and how you like it — so next time's easy." },
+  { key: "rollover", title: "Can't use it?", body: "It rolls over for one more cycle. Still stuck? Gift the cut to a mate." },
 ] as const;
 
 export default function TokenExplainer() {

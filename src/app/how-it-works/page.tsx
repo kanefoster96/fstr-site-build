@@ -1,46 +1,46 @@
 import Coin from "@/components/Coin";
 import { Container, Button, Num, Eyebrow } from "@/components/ui";
 
-export const metadata = { title: "How the token works — FSTR Cuts" };
+export const metadata = { title: "How it works — FSTR" };
 
 const RULES: { n: string; title: string; body: string; ring?: number; ghost?: boolean; flipped?: boolean }[] = [
   {
     n: "01",
-    title: "You earn a token on payment",
-    body: "Your billing day mints exactly one token, instantly. One token, one cut — beard tidy included.",
+    title: "One cut, every month",
+    body: "On your billing date, a haircut is added to your account. One full cut, beard tidy included.",
   },
   {
     n: "02",
-    title: "You get 60 days to use it",
-    body: "Two full billing cycles, never less. That's the headline promise: a cut you've paid for waits for you.",
+    title: "60 days to use it",
+    body: "You've got 60 days from when it's added — that's two full months. No rush.",
     ring: 0.85,
   },
   {
     n: "03",
-    title: "You can hold two at a time",
-    body: "Bank up to two. If your wallet's full on billing day, we pause — nothing's charged, nothing's minted. We never charge into a full wallet.",
+    title: "Keep a few in the bank",
+    body: "Up to five can sit in your account at once. If it's full when your next one's due, I hold off — you're never charged for a cut you can't fit in.",
   },
   {
     n: "04",
-    title: "Booking freezes the clock",
-    body: "The moment you book, the countdown stops. A reserved token can't expire, even past day 60.",
+    title: "Once booked, it's yours",
+    body: "Book an appointment and that cut is locked to it. It won't run out while it's booked, even if the date's past day 60.",
     ring: 0.5,
   },
   {
     n: "05",
-    title: "Cancel early and you keep it",
-    body: "Cancel 24 hours ahead and the token comes back with at least a week left on it. Inside 24 hours or a no-show and it's spent — but there's a once-a-year goodwill button.",
+    title: "Change of plan? Just tell me",
+    body: "Let me know 24 hours ahead and the cut goes back to your account. Inside 24 hours or a no-show and it's used — but message me, I'm reasonable.",
   },
   {
     n: "06",
-    title: "Gift it and it's never a risk",
-    body: "One tap sends a mate a cut. They've 14 days to book. If they don't, it comes back to you with whatever time was left. Gifts can't be re-gifted and have no cash value.",
+    title: "Gift it to a mate",
+    body: "Send a cut to a mate in a tap. They get 14 days to book it. If they don't, it comes straight back to you. Gifts have no cash value.",
     flipped: true,
   },
   {
     n: "07",
-    title: "Cancel your membership, keep your tokens",
-    body: "Billing stops, but any unexpired tokens stay usable right to their expiry. You never lose a cut you've paid for.",
+    title: "Cancel any time, keep your cuts",
+    body: "Stop your membership whenever you like. Billing stops, and any cuts still in your account stay yours until they run out.",
     ghost: true,
   },
 ];
@@ -49,13 +49,13 @@ export default function HowItWorksPage() {
   return (
     <Container className="py-12">
       <div className="text-center">
-        <Eyebrow>The token rules</Eyebrow>
+        <Eyebrow>How it works</Eyebrow>
         <h1 className="mt-3 font-display text-4xl font-bold sm:text-5xl">
-          Seven rules. <span className="value">No small print.</span>
+          Everything you need to know, <span className="value">in plain English.</span>
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-steel">
-          This is the trust document. What you own, what rolls over, what happens if you cancel —
-          in plain English.
+          No jargon, no small print. Here&apos;s exactly how your membership works — what you get,
+          what happens if you can&apos;t make it, and how to cancel.
         </p>
       </div>
 
@@ -78,10 +78,12 @@ export default function HowItWorksPage() {
 
       <div className="mx-auto mt-12 max-w-3xl rounded-2xl border border-brass/40 p-8 text-center">
         <p className="font-display text-2xl font-semibold">
-          Tokens are use or gift only. No cash-out, no faff.
+          Use it, or gift it. That&apos;s the whole thing.
         </p>
-        <p className="mt-2 text-steel">One currency, two uses. You could explain it to a mate in a sentence.</p>
-        <Button href="/join" className="mt-5">Take a seat</Button>
+        <p className="mt-2 text-steel">
+          Still got a question? Just message me — I&apos;d rather you asked than wondered.
+        </p>
+        <Button href="/join" className="mt-5">Join FSTR</Button>
       </div>
     </Container>
   );
