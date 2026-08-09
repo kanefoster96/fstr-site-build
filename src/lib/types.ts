@@ -25,7 +25,7 @@ export type TokenState =
   | "GIFTED"
   | "EXPIRED";
 
-export type TokenSource = "subscription" | "referral_reward" | "goodwill";
+export type TokenSource = "subscription" | "referral_reward" | "goodwill" | "one_off";
 
 export type BookingKind =
   | "member"

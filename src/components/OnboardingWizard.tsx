@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
+import Coin from "@/components/Coin";
+import TokenGuide from "@/components/TokenGuide";
 import { gbp } from "@/lib/format";
 import { completeMembership, completeOneOff, completeSkip, type OnboardData } from "@/app/join/actions";
 
@@ -35,6 +36,10 @@ export default function OnboardingWizard({
   const [frequency, setFrequency] = useState<number>(4);
   const [slotId, setSlotId] = useState<string | null>(null);
 
+  // Final-step purchase flow: pick a plan, pay, earn a token, then spend it.
+  const [plan, setPlan] = useState<"membership" | "oneoff" | null>(null);
+  const [phase, setPhase] = useState<"choose" | "paying" | "paid">("choose");
+
   const STEPS = ["You", "How often", "First cut", "Ready"];
   const canNext = step === 0 ? !!(name.trim() && email.trim()) : true;
   const data: OnboardData = {
@@ -57,6 +62,23 @@ export default function OnboardingWizard({
 
   const go = (fn: (d: OnboardData) => Promise<void>) => start(() => fn(data));
   const selectedSlot = slots.find((s) => s.id === slotId);
+  const payAmount = plan === "oneoff" ? oneOffPrice : rate;
+
+  // Simulate the checkout, then drop a token into the header wallet.
+  function pay() {
+    if (!plan) return;
+    setPhase("paying");
+    setTimeout(() => {
+      window.dispatchEvent(new Event("fstr:token-earned"));
+      setPhase("paid");
+    }, 850);
+  }
+
+  // Spend the freshly-earned token to confirm the first cut, then finish set-up.
+  function spendAndFinish() {
+    if (selectedSlot) window.dispatchEvent(new Event("fstr:token-spent"));
+    go(plan === "oneoff" ? completeOneOff : completeMembership);
+  }
 
   return (
     <div className="mx-auto max-w-xl">
@@ -155,9 +177,9 @@ export default function OnboardingWizard({
           </Step>
         )}
 
-        {/* Step 3 — choose path */}
-        {step === 3 && (
-          <Step title={`All set, ${name.split(" ")[0] || "you"}`} blurb="Choose how you want to start.">
+        {/* Step 3 — pay, earn a token, spend it */}
+        {step === 3 && phase !== "paid" && (
+          <Step title={`Almost there, ${name.split(" ")[0] || "you"}`} blurb="Choose how you'd like to pay — then your first token's yours.">
             <div className="rounded-xl bg-mist p-3 text-sm">
               <p className="num text-steel">
                 {selectedSlot ? `First cut: ${selectedSlot.day} ${selectedSlot.time}` : "First cut: pick later"}
@@ -167,52 +189,115 @@ export default function OnboardingWizard({
 
             <button
               type="button"
-              disabled={pending}
-              onClick={() => go(completeMembership)}
-              className="w-full rounded-2xl bg-brass p-4 text-left text-ink disabled:opacity-60"
+              disabled={phase === "paying"}
+              onClick={() => setPlan("membership")}
+              className={`w-full rounded-2xl border p-4 text-left transition-colors ${
+                plan === "membership" ? "border-brass bg-mist" : "border-steel/40 hover:border-ink"
+              }`}
             >
               <span className="flex items-center justify-between">
-                <span className="font-medium">Start membership</span>
+                <span className="font-medium">Membership</span>
                 <span className="num">{gbp(rate)}/cycle</span>
               </span>
-              <span className="mt-0.5 block text-sm text-ink/70">
-                Your first token now, and {selectedSlot ? "your cut booked in" : "book whenever suits"}.
+              <span className="mt-0.5 block text-sm text-steel">
+                A token every {frequency} weeks — keep the chair, save on every cut.
               </span>
             </button>
 
             <button
               type="button"
-              disabled={pending}
-              onClick={() => go(completeOneOff)}
-              className="w-full rounded-2xl border border-steel/40 p-4 text-left hover:border-ink disabled:opacity-60"
+              disabled={phase === "paying"}
+              onClick={() => setPlan("oneoff")}
+              className={`w-full rounded-2xl border p-4 text-left transition-colors ${
+                plan === "oneoff" ? "border-brass bg-mist" : "border-steel/40 hover:border-ink"
+              }`}
             >
               <span className="flex items-center justify-between">
-                <span className="font-medium">Just try a cut</span>
+                <span className="font-medium">One-off cut</span>
                 <span className="num">{gbp(oneOffPrice)}</span>
               </span>
               <span className="mt-0.5 block text-sm text-steel">
-                One-off, no commitment. Like it and join on the day — we knock{" "}
-                {gbp(oneOffPrice - rate)} off your first token.
+                A single token, no commitment. Join on the day and we knock{" "}
+                {gbp(oneOffPrice - rate)} off your first membership token.
               </span>
             </button>
 
             <button
               type="button"
-              disabled={pending}
+              disabled={!plan || phase === "paying"}
+              onClick={pay}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-brass py-3.5 text-sm font-semibold text-ink transition-opacity disabled:opacity-40"
+            >
+              {phase === "paying" ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink/30 border-t-ink" />
+                  Taking payment…
+                </>
+              ) : (
+                <>Pay {gbp(payAmount)} &amp; get your token</>
+              )}
+            </button>
+
+            <button
+              type="button"
+              disabled={pending || phase === "paying"}
               onClick={() => go(completeSkip)}
-              className="num w-full py-2 text-sm text-steel hover:text-ink disabled:opacity-60"
+              className="num w-full py-1 text-sm text-steel hover:text-ink disabled:opacity-60"
             >
               Skip for now — take me to my dashboard
             </button>
 
             <p className="num text-center text-[11px] text-steel">
-              A token is earned on each billing date and used to redeem a cut.{" "}
-              <Link href="/how-it-works" className="value underline underline-offset-2">
-                See how tokens work
-              </Link>
+              A token is earned when you pay, and again on each billing date.{" "}
+              <TokenGuide />
             </p>
             <p className="num text-center text-[11px] text-steel">
               Mock checkout · no card charged · {foundingLeft} Founding seats left
+            </p>
+          </Step>
+        )}
+
+        {/* Step 3 (paid) — the token landed; spend it to confirm the first cut */}
+        {step === 3 && phase === "paid" && (
+          <Step title="Nice — that's your first token" blurb="It just landed in your wallet (top-right). One token, one cut.">
+            <div className="flex flex-col items-center gap-3 py-2">
+              <Coin size={92} className="animate-coin-drop" />
+              <p className="num text-[11px] text-steel">
+                {plan === "oneoff" ? gbp(oneOffPrice) : gbp(rate)} paid · 1 token earned
+              </p>
+            </div>
+
+            {selectedSlot ? (
+              <>
+                <div className="rounded-xl bg-mist p-3 text-center text-sm">
+                  <p className="num text-steel">
+                    Spend it on your first cut: <span className="value">{selectedSlot.day} {selectedSlot.time}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={spendAndFinish}
+                  className="w-full rounded-full bg-ink py-3.5 text-sm font-semibold text-paper transition-opacity disabled:opacity-50"
+                >
+                  {pending ? "Booking your cut…" : "Use my token — confirm this cut"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={spendAndFinish}
+                className="w-full rounded-full bg-ink py-3.5 text-sm font-semibold text-paper transition-opacity disabled:opacity-50"
+              >
+                {pending ? "Setting up…" : "Take me to my wallet"}
+              </button>
+            )}
+
+            <p className="num text-center text-[11px] text-steel">
+              {selectedSlot
+                ? "Spending a token books it instantly — nothing to pay at the chair."
+                : "Your token's waiting in your wallet — book a slot whenever suits."}
             </p>
           </Step>
         )}

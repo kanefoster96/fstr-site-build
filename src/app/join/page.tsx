@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Coin from "@/components/Coin";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import TokenGuide from "@/components/TokenGuide";
 import { Container, Button, Num, Eyebrow } from "@/components/ui";
 import { getSeatSummary, getSettings } from "@/lib/data/queries";
 import { getDb } from "@/lib/data/db";
@@ -47,9 +47,7 @@ export default async function JoinPage({
         <p className="mx-auto mt-2 max-w-md text-steel">
           Membership earns you a token on each billing date — one token, one cut. Book with a token,
           or try a one-off first.{" "}
-          <Link href="/how-it-works" className="value underline underline-offset-4">
-            See how tokens work →
-          </Link>
+          <TokenGuide />
         </p>
       </div>
 

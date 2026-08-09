@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Coin from "./Coin";
+import HeaderTokens from "./HeaderTokens";
 import { Container } from "./ui";
 
 /**
@@ -29,13 +29,13 @@ export default function SiteHeader() {
               {l.label}
             </Link>
           ))}
-          <TokenCoin />
+          <HeaderTokens />
           <JoinButton />
         </nav>
 
         {/* Mobile cluster: empty coin · Join · hamburger */}
         <div className="flex items-center gap-3 md:hidden">
-          <TokenCoin />
+          <HeaderTokens />
           <JoinButton />
           <details className="relative">
             <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-steel/40 [&::-webkit-details-marker]:hidden">
@@ -58,15 +58,6 @@ export default function SiteHeader() {
         </div>
       </Container>
     </header>
-  );
-}
-
-/** Empty token coin — your wallet at a glance (no tokens yet). */
-function TokenCoin() {
-  return (
-    <Link href="/me" aria-label="Your tokens" className="shrink-0" title="Your tokens">
-      <Coin size={34} ghost />
-    </Link>
   );
 }
 

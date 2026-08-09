@@ -10,7 +10,8 @@ import {
   grantTrialCredit,
 } from "@/lib/engine/membership";
 import { invoicePaid } from "@/lib/adapters/payments";
-import { bookWithToken, bookOneOff } from "@/lib/engine/booking";
+import { bookWithToken } from "@/lib/engine/booking";
+import { mintToken } from "@/lib/engine/tokens";
 import { sendMail } from "@/lib/adapters/mail";
 import { bookingConfirmedEmail, oneOffFollowUpEmail } from "@/lib/emails";
 
@@ -60,8 +61,10 @@ export async function completeMembership(data: OnboardData) {
   redirect("/me?welcome=1");
 }
 
-/** Try a one-off (£35). Creates a login, books the cut, and banks a credit
- *  toward a same-day membership. */
+/** Try a one-off (£35). The £35 buys a single token there and then — which is
+ *  spent immediately on the chosen first cut — so the flow is identical to a
+ *  member's: pay, earn a token, spend it. No subscription; banks a credit toward
+ *  a same-day membership. */
 export async function completeOneOff(data: OnboardData) {
   const memberId = await mutate((db) => {
     const member = createGuestAccount(db, {
@@ -71,14 +74,18 @@ export async function completeOneOff(data: OnboardData) {
       usualCut: data.usualCut || undefined,
       frequencyWeeks: data.frequencyWeeks,
     });
+
+    // The £35 mints one token (recorded as a paid one-off purchase).
+    const token = mintToken(db, member.id, "one_off");
+
     if (data.slotId) {
       try {
-        const booking = bookOneOff(db, data.slotId, { name: data.name, email: data.email, phone: "" });
-        booking.member_id = member.id; // link the trial cut to their account
+        const booking = bookWithToken(db, member.id, data.slotId, token.id, { via: "calendar" });
+        booking.price_paid = db.settings.oneoff_price; // the £35 they actually paid
         const slot = db.slots.find((s) => s.id === data.slotId);
         if (slot) sendMail(db, "booking_confirmed", data.email, bookingConfirmedEmail(data.name, slot.starts_at, false));
       } catch {
-        /* slot gone */
+        /* slot gone — the token stays in their wallet to book later */
       }
     }
     // Credit = the extra a one-off costs over a cycle, applied if they join today.
