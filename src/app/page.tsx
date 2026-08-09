@@ -234,8 +234,14 @@ export default async function HomePage() {
             <Link href="/about" className="text-sm text-steel hover:text-ink">More on the chair →</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="aspect-square rounded-2xl bg-[linear-gradient(135deg,#e7e5df,#d5d3cb)]" aria-hidden />
+            {[1, 2, 3, 4].map((i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={`/recent-${i}.jpg`}
+                alt="A recent FSTR cut"
+                className="aspect-square w-full rounded-2xl object-cover"
+              />
             ))}
           </div>
         </Container>
