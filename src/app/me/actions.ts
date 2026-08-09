@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { mutate } from "@/lib/data/db";
 import { getSession } from "@/lib/auth";
 import { bookWithToken, createPrebook } from "@/lib/engine/booking";
-import { changePlan, PlanError } from "@/lib/engine/membership";
+import { changePlan, PlanError, upgradeToMembership } from "@/lib/engine/membership";
+import { invoicePaid } from "@/lib/adapters/payments";
 import { giftToken } from "@/lib/engine/gifts";
 import { sendMail } from "@/lib/adapters/mail";
 import { bookingConfirmedEmail, giftSentEmail, giftReceivedEmail } from "@/lib/emails";
@@ -42,6 +43,35 @@ export async function quickBookAction(formData: FormData) {
   revalidatePath("/me");
   revalidatePath("/me/book");
   redirect(`/me?done=${encodeURIComponent(outcome)}`);
+}
+
+/** Guest/trial → membership. Applies any valid same-day trial credit to the
+ *  first token, then mints it. */
+export async function upgradeMembershipAction(formData: FormData) {
+  const session = await getSession();
+  if (!session.member) redirect("/join");
+  const weeks = Number(formData.get("cycle_weeks") || 0) || undefined;
+  const m = session.member;
+
+  const outcome = await mutate((db) => {
+    const res = upgradeToMembership(db, m.id, weeks);
+    if (!res) return { full: true as const };
+    const member = db.members.find((x) => x.id === m.id);
+    let credited = 0;
+    if (member?.trial_credit && member.trial_credit_expires && new Date(db.clock.now) < new Date(member.trial_credit_expires)) {
+      credited = member.trial_credit;
+    }
+    if (member) {
+      member.trial_credit = 0;
+      member.trial_credit_expires = null;
+    }
+    invoicePaid(db, m.id, true); // mints the first token + welcome
+    return { full: false as const, credited };
+  });
+
+  revalidatePath("/me");
+  if (outcome.full) redirect("/join?waitlisted=1");
+  redirect(`/me?welcome=1${outcome.credited ? `&credit=${outcome.credited}` : ""}`);
 }
 
 /** Change billing cadence (2/3/4/5/6-week plan), once per cycle. */

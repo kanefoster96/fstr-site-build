@@ -8,14 +8,17 @@ import { getSession } from "@/lib/auth";
 import { getWallet, getUsual, getComingUp } from "@/lib/data/member";
 import { getDb } from "@/lib/data/db";
 import { gbp, daysLeftLabel, fmtDateTime, fmtMonthDay, fmtDay, fmtTime } from "@/lib/format";
-import { quickBookAction, quickGiftAction } from "./actions";
+import { quickBookAction, quickGiftAction, upgradeMembershipAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function WalletPage({
   searchParams,
 }: {
-  searchParams: Promise<{ done?: string; gifted?: string; booked?: string; welcome?: string; plan?: string }>;
+  searchParams: Promise<{
+    done?: string; gifted?: string; booked?: string; welcome?: string; plan?: string;
+    trial?: string; explore?: string; credit?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const session = await getSession();
@@ -61,7 +64,13 @@ export default async function WalletPage({
       )}
       {sp.done === "booked" && <Banner>Booked — your token&apos;s reserved and the clock&apos;s frozen. ❄</Banner>}
       {sp.done === "prebooked" && <Banner>Held for you — it confirms the moment your next token lands.</Banner>}
-      {(sp.booked || sp.welcome) && <Banner>You&apos;re all set. Welcome to FSTR. ✂</Banner>}
+      {(sp.booked || sp.welcome) && (
+        <Banner>
+          You&apos;re all set. Welcome to FSTR. ✂{sp.credit ? ` £${(Number(sp.credit) / 100).toFixed(0)} trial credit applied.` : ""}
+        </Banner>
+      )}
+      {sp.trial && <Banner>Trial cut booked — enjoy it. Join on the day and we&apos;ll knock the extra off your first token.</Banner>}
+      {sp.explore && <Banner>Welcome in. Have a look around — book your first cut whenever you&apos;re ready.</Banner>}
       {sp.plan === "locked" && <Banner>You&apos;ve already changed plan this cycle — switch again after your next token.</Banner>}
       {sp.plan && sp.plan !== "locked" && (
         <Banner>Plan updated — a token every <span className="num value">{sp.plan}</span> weeks now.</Banner>
@@ -69,12 +78,20 @@ export default async function WalletPage({
 
       {/* Header + value chips */}
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Eyebrow>Your wallet</Eyebrow>
-          <h1 className="mt-2 font-display text-4xl font-bold">Alright, {wallet.name.split(" ")[0]}.</h1>
-          <p className="num mt-1 text-sm text-steel">
-            Seat {wallet.seat} · {wallet.badges.join(" · ") || "Member"}
-          </p>
+        <div className="flex items-center gap-3">
+          {session.member.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={session.member.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+          ) : null}
+          <div>
+            <Eyebrow>{wallet.subscribed ? "Your wallet" : "Your dashboard"}</Eyebrow>
+            <h1 className="mt-2 font-display text-4xl font-bold">Alright, {wallet.name.split(" ")[0]}.</h1>
+            <p className="num mt-1 text-sm text-steel">
+              {wallet.subscribed
+                ? `Seat ${wallet.seat} · ${wallet.badges.join(" · ") || "Member"}`
+                : "Exploring · not a member yet"}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2 text-sm">
           <Button href="/me/book" variant="ghost" className="text-sm">All slots</Button>
@@ -82,11 +99,42 @@ export default async function WalletPage({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        <Stat label="Your rate" value={gbp(wallet.lockedRate)} sub={`save ${gbp(wallet.savePerCut)}/cut`} brass />
-        <Stat label="Saved this year" value={gbp(wallet.savedThisYear)} sub={`${wallet.cutsCount} cuts`} brass />
-        <Stat label="Streak" value={`${wallet.streakMonths}`} sub="months" />
-      </div>
+      {/* Guest → membership CTA */}
+      {!wallet.subscribed && (
+        <div className="mt-6 rounded-2xl border border-brass/40 bg-mist p-6">
+          <div className="flex items-start gap-4">
+            <Coin size={56} />
+            <div className="flex-1">
+              <p className="font-display text-xl font-semibold">Become a member</p>
+              <p className="mt-1 text-sm text-steel">
+                {gbp(wallet.currentRate)} per token — a cut a month that never goes to waste, first look at
+                every slot, and you can gift them.
+                {wallet.trialCreditValid && (
+                  <>
+                    {" "}
+                    <span className="value">Today only:</span> we&apos;ll knock{" "}
+                    <span className="num value">{gbp(wallet.trialCredit)}</span> off your first token.
+                  </>
+                )}
+              </p>
+              <form action={upgradeMembershipAction} className="mt-4">
+                <input type="hidden" name="cycle_weeks" value={session.member.cut_frequency_weeks ?? 4} />
+                <button className="rounded-full bg-brass px-6 py-2.5 text-sm font-medium text-paper">
+                  Join — {gbp(wallet.trialCreditValid ? Math.max(0, wallet.currentRate - wallet.trialCredit) : wallet.currentRate)} now
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wallet.subscribed && (
+        <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+          <Stat label="Your rate" value={gbp(wallet.lockedRate)} sub={`per token`} brass />
+          <Stat label="Saved this year" value={gbp(wallet.savedThisYear)} sub={`${wallet.cutsCount} cuts`} brass />
+          <Stat label="Streak" value={`${wallet.streakMonths}`} sub="months" />
+        </div>
+      )}
 
       {/* ===== The dashboard ===== */}
       <div className="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
@@ -103,9 +151,13 @@ export default async function WalletPage({
           </div>
 
           {issued.length === 0 ? (
-            <div className="mt-3 flex flex-col items-center rounded-2xl bg-mist py-12">
+            <div className="mt-3 flex flex-col items-center rounded-2xl bg-mist py-12 text-center">
               <Coin size={84} ghost />
-              <p className="mt-4 text-steel">Your next token drops {fmtMonthDay(wallet.nextTokenDrops)}.</p>
+              <p className="mt-4 max-w-xs text-steel">
+                {wallet.subscribed
+                  ? `Your next token drops ${fmtMonthDay(wallet.nextTokenDrops)}.`
+                  : "No tokens yet. Become a member above and your first one lands right away."}
+              </p>
             </div>
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -188,7 +240,7 @@ export default async function WalletPage({
                   Provisional — confirms when your token lands {fmtMonthDay(wallet.nextTokenDrops)}.
                 </p>
               </div>
-            ) : usualSlot ? (
+            ) : wallet.subscribed && usualSlot ? (
               <div className="rounded-2xl border border-brass/40 bg-mist p-6">
                 <p className="text-sm text-steel">Your usual</p>
                 <p className="num mt-1 text-xl">{usual!.label}</p>
@@ -205,7 +257,7 @@ export default async function WalletPage({
                   </button>
                 </AnimatedSubmit>
               </div>
-            ) : soonest ? (
+            ) : wallet.subscribed && soonest ? (
               <div className="rounded-2xl border border-brass/40 bg-mist p-6">
                 <p className="text-sm text-steel">Soonest free slot</p>
                 <p className="num mt-1 text-xl">{fmtDateTime(soonest.starts_at)}</p>
@@ -218,6 +270,15 @@ export default async function WalletPage({
                     Grab this one
                   </button>
                 </AnimatedSubmit>
+              </div>
+            ) : !wallet.subscribed ? (
+              <div className="rounded-2xl border border-brass/40 bg-mist p-6">
+                <p className="text-sm text-steel">Ready for your first cut?</p>
+                <p className="num mt-1 text-xl">
+                  {soonest ? fmtDateTime(soonest.starts_at) : "Slots open two weeks out"}
+                </p>
+                <p className="mt-1 text-sm text-steel">Try a one-off, or become a member above.</p>
+                <Button href="/book" className="mt-4 w-full">Book a one-off — {gbp(db.settings.oneoff_price)}</Button>
               </div>
             ) : (
               <div className="rounded-2xl bg-mist p-6">

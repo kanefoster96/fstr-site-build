@@ -27,7 +27,25 @@ export default async function ProfilePage({
   const db = await getDb();
   const m = session.member;
   const sub = db.subscriptions.find((s) => s.member_id === m.id);
+  const subscribed = !!sub && sub.status !== "cancelled";
   const stats = cancelStats(db, m.id);
+
+  if (!subscribed) {
+    return (
+      <Container className="py-12">
+        <Eyebrow>Profile</Eyebrow>
+        <h1 className="mt-2 font-display text-4xl font-bold">{m.name}</h1>
+        <p className="num mt-1 text-sm text-steel">Exploring · not a member yet</p>
+        <Card className="!bg-mist mt-8 max-w-lg">
+          <p className="text-sm font-medium">Your details</p>
+          <p className="num mt-2 text-sm text-steel">{m.email}{m.phone ? <><br />{m.phone}</> : null}</p>
+          {m.usual_cut && <p className="mt-3 text-sm">Usual: <span className="text-steel">{m.usual_cut}</span></p>}
+          <Button href="/me" className="mt-5">Become a member</Button>
+        </Card>
+        <Link href="/me" className="mt-8 inline-block text-sm text-steel hover:text-ink">← Back to dashboard</Link>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-12">

@@ -49,7 +49,7 @@ function defaultSettings(): Settings {
       { from_seat: 51, to_seat: 100, price: BAND_2, label: "Second 50", note: "£25, reviewed annually" },
       { from_seat: 101, to_seat: 130, price: BAND_3, label: "Final 30", note: "£30" },
     ],
-    current_rate: BAND_3,
+    current_rate: FOUNDING_50, // all plans £25 per cycle for now
     waitlist_price: 3500,
     total_seats: 130,
     weekday_daily_cap: 5,

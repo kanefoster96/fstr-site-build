@@ -37,6 +37,11 @@ export interface Wallet {
   planLocked: boolean; // already changed this cycle
   nextBillingAt: string;
   plans: number[];
+  // Guest / trial (onboarding)
+  subscribed: boolean;
+  trialCredit: Pence;
+  trialCreditValid: boolean;
+  hasTrialBooking: boolean;
 }
 
 export async function getWallet(memberId: string): Promise<Wallet | null> {
@@ -120,6 +125,15 @@ export async function getWallet(memberId: string): Promise<Wallet | null> {
     planLocked: sub?.plan_locked_until_next_billing ?? false,
     nextBillingAt: sub?.next_billing_at ?? firstOfNextMonth(now),
     plans: db.settings.plans,
+    subscribed: !!sub && sub.status !== "cancelled",
+    trialCredit: m.trial_credit ?? 0,
+    trialCreditValid:
+      !!m.trial_credit &&
+      !!m.trial_credit_expires &&
+      new Date(now) < new Date(m.trial_credit_expires),
+    hasTrialBooking: db.bookings.some(
+      (b) => b.member_id === memberId && (b.kind === "one_off" || b.kind === "weekend_oneoff") && b.status === "confirmed",
+    ),
   };
 }
 

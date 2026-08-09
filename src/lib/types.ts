@@ -65,6 +65,11 @@ export interface Member {
   // Preferences / personalisation
   usual_cut?: string;
   notes?: string; // barber-facing notes
+  cut_frequency_weeks?: number; // how often they like a cut (from onboarding)
+  // Trial → membership: extra paid on a one-off, credited to the first token if
+  // they join on the day (§ onboarding). Cosmetic in the mock (payments faked).
+  trial_credit?: Pence;
+  trial_credit_expires?: ISODate | null;
   // Gamification
   streak_months?: number;
   badges?: string[];

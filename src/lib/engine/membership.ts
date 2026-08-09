@@ -33,6 +33,10 @@ export interface JoinInput {
   email: string;
   phone: string;
   availability: AvailabilityFlag[];
+  cycleWeeks?: number;
+  avatarUrl?: string | null;
+  usualCut?: string;
+  frequencyWeeks?: number;
 }
 
 export interface JoinResult {
@@ -58,16 +62,18 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
     name: input.name,
     email: input.email,
     phone: input.phone,
-    avatar_url: null,
+    avatar_url: input.avatarUrl ?? null,
     availability_profile: input.availability,
     joined_at: db.clock.now,
     seat_number: seat,
     status: "active",
     role: "member",
+    usual_cut: input.usualCut,
+    cut_frequency_weeks: input.frequencyWeeks,
     streak_months: 0,
     badges: seat <= 50 ? ["Founding Member"] : [],
   };
-  const cycle = db.settings.default_cycle_weeks;
+  const cycle = input.cycleWeeks ?? db.settings.default_cycle_weeks;
   const subscription: Subscription = {
     id: `sub_${id}`,
     member_id: id,
@@ -88,6 +94,98 @@ export function join(db: DataStore, input: JoinInput): JoinResult | null {
   db.members.push(member);
   db.subscriptions.push(subscription);
   return { member, subscription, seat, rate };
+}
+
+export interface GuestInput {
+  name: string;
+  email: string;
+  phone?: string;
+  avatarUrl?: string | null;
+  usualCut?: string;
+  frequencyWeeks?: number;
+}
+
+/**
+ * Create an account with a login but no subscription yet — a "guest" who
+ * skipped or is trying a one-off. They get a personalised dashboard (0 tokens,
+ * available dates, prompt to book) and can upgrade to membership any time.
+ */
+export function createGuestAccount(db: DataStore, input: GuestInput): Member {
+  const id = `mem_guest_${Date.now().toString(36)}_${db.members.length}`;
+  const member: Member = {
+    id,
+    name: input.name,
+    email: input.email,
+    phone: input.phone ?? "",
+    avatar_url: input.avatarUrl ?? null,
+    availability_profile: [],
+    joined_at: db.clock.now,
+    seat_number: null, // no seat until they subscribe
+    status: "active",
+    role: "member",
+    usual_cut: input.usualCut,
+    cut_frequency_weeks: input.frequencyWeeks,
+    streak_months: 0,
+    badges: [],
+  };
+  db.members.push(member);
+  return member;
+}
+
+export function hasSubscription(db: DataStore, memberId: string): boolean {
+  return db.subscriptions.some((s) => s.member_id === memberId && s.status !== "cancelled");
+}
+
+/** Record the credit a one-off trial earns toward a same-day membership. */
+export function grantTrialCredit(db: DataStore, memberId: string, credit: Pence): void {
+  const m = db.members.find((x) => x.id === memberId);
+  if (m) {
+    m.trial_credit = credit;
+    m.trial_credit_expires = addDays(db.clock.now, 1);
+  }
+}
+
+/**
+ * Upgrade a guest to full membership: assign a seat + subscription at the
+ * chosen cadence. Returns null if membership is full.
+ */
+export function upgradeToMembership(
+  db: DataStore,
+  memberId: string,
+  cycleWeeks?: number,
+): { seat: number; rate: Pence } | null {
+  const m = db.members.find((x) => x.id === memberId);
+  if (!m) return null;
+  if (hasSubscription(db, memberId)) {
+    const sub = db.subscriptions.find((s) => s.member_id === memberId)!;
+    return { seat: m.seat_number ?? 0, rate: sub.price_locked };
+  }
+  const seat = nextFreeSeat(db);
+  if (seat == null) return null;
+  const rate = priceForSeat(db, seat);
+  const cycle = cycleWeeks ?? db.settings.default_cycle_weeks;
+  m.seat_number = seat;
+  if (seat <= 50 && !(m.badges ?? []).includes("Founding Member")) {
+    m.badges = [...(m.badges ?? []), "Founding Member"];
+  }
+  db.subscriptions.push({
+    id: `sub_${memberId}`,
+    member_id: memberId,
+    tier: "monthly",
+    price_locked: rate,
+    billing_day: new Date(db.clock.now).getUTCDate(),
+    cycle_weeks: cycle,
+    last_billing_at: db.clock.now,
+    next_billing_at: addDays(db.clock.now, cycle * 7),
+    plan_locked_until_next_billing: false,
+    status: "active",
+    started_at: db.clock.now,
+    cancel_effective_at: null,
+    reclaim_deadline: null,
+    past_due_since: null,
+    retry_count: 0,
+  });
+  return { seat, rate };
 }
 
 /** Cancel flow numbers, computed live for the retention screen (§7). */
