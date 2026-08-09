@@ -1,85 +1,69 @@
-import Coin from "@/components/Coin";
-import { Container, Button, Num, Eyebrow } from "@/components/ui";
+import { Container, Button, Eyebrow } from "@/components/ui";
+import TokenExplainer, { type ExplainerStep } from "@/components/TokenExplainer";
 
 export const metadata = { title: "How it works — FSTR" };
 
-const RULES: { n: string; title: string; body: string; ring?: number; ghost?: boolean; flipped?: boolean }[] = [
+/** The token's life, told with the travelling coin — fuller than the homepage. */
+const STEPS: ExplainerStep[] = [
   {
-    n: "01",
-    title: "One cut, every month",
-    body: "On your billing date, a haircut is added to your account. One full cut, beard tidy included.",
+    key: "first",
+    variant: "gold",
+    title: "Join & book your first cut",
+    body: "Your first payment adds a token and books your first cut on the spot — no waiting for a billing date. One token is one full haircut, beard tidy included.",
   },
   {
-    n: "02",
-    title: "60 days to use it",
-    body: "You've got 60 days from when it's added — that's two full months. No rush.",
-    ring: 0.85,
+    key: "billing",
+    variant: "gold",
+    title: "A token every billing date",
+    body: "After that, a fresh token — the gold coin — lands in your account on each billing date. Choose how often that is when you join: every 2, 3, 4 or 6 weeks.",
   },
   {
-    n: "03",
-    title: "Keep a few in the bank",
-    body: "Up to five can sit in your account at once. If it's full when your next one's due, I hold off — you're never charged for a cut you can't fit in.",
+    key: "life",
+    variant: "gold",
+    title: "60 days to use each one",
+    body: "Every token is good for 60 days from the day it lands — two full months, so there's no rush and nothing's wasted.",
   },
   {
-    n: "04",
-    title: "Once booked, it's yours",
-    body: "Book an appointment and that cut is locked to it. It won't run out while it's booked, even if the date's past day 60.",
-    ring: 0.5,
+    key: "book",
+    variant: "gold",
+    title: "Use it to book",
+    body: "Spend a token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message Adam and he'll sort one.",
   },
   {
-    n: "05",
-    title: "Change of plan? Just tell me",
-    body: "Let me know 24 hours ahead and the cut goes back to your account. Inside 24 hours or a no-show and it's used — but message me, I'm reasonable.",
+    key: "saved",
+    variant: "ghost",
+    title: "Your cut, saved",
+    body: "Once we get it right, Adam saves the lengths, the blend and how you like it — so every visit is consistent and you never explain it twice.",
   },
   {
-    n: "06",
-    title: "Gift it to a mate",
-    body: "Send a cut to a mate in a tap. They get 14 days to book it. If they don't, it comes straight back to you. Gifts have no cash value.",
-    flipped: true,
-  },
-  {
-    n: "07",
-    title: "Cancel any time, keep your cuts",
-    body: "Stop your membership whenever you like. Billing stops, and any cuts still in your account stay yours until they run out.",
-    ghost: true,
+    key: "gift",
+    variant: "silver",
+    title: "Roll it over, or gift it",
+    body: "Not used a token in time? It rolls over for another cycle. Still stuck? It turns silver and giftable — send the cut to a mate. Cancel whenever you like and any unused tokens stay yours until they run out.",
   },
 ];
 
 export default function HowItWorksPage() {
   return (
     <Container className="py-12">
-      <div className="text-center">
+      <div className="mx-auto max-w-2xl text-center">
         <Eyebrow>How it works</Eyebrow>
         <h1 className="mt-3 font-display text-4xl font-bold sm:text-5xl">
-          Everything you need to know, <span className="value">in plain English.</span>
+          One token, <span className="value">one cut.</span>
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-steel">
-          No jargon, no small print. Here&apos;s exactly how your membership works — what you get,
-          what happens if you can&apos;t make it, and how to cancel.
+          Your membership runs on tokens — think of them as your cuts, saved as coins. Here&apos;s the
+          life of a single token, from the day it lands to the day you use it (or pass it on). No
+          jargon, no small print.
         </p>
       </div>
 
-      <div className="mx-auto mt-12 max-w-3xl space-y-4">
-        {RULES.map((r) => (
-          <div key={r.n} className="flex items-start gap-5 rounded-2xl bg-mist p-6">
-            <div className="shrink-0">
-              <Coin size={64} ring={r.ring} ghost={r.ghost} flipped={r.flipped} code={r.flipped ? "BRASS" : undefined} />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-3">
-                <Num value className="text-sm">{r.n}</Num>
-                <h2 className="font-display text-xl font-semibold">{r.title}</h2>
-              </div>
-              <p className="mt-1 text-steel">{r.body}</p>
-            </div>
-          </div>
-        ))}
+      <div className="mt-12">
+        <TokenExplainer steps={STEPS} />
       </div>
 
-      <div className="mx-auto mt-12 max-w-3xl rounded-2xl border border-brass/40 p-8 text-center">
-        <p className="font-display text-2xl font-semibold">
-          Use it, or gift it. That&apos;s the whole thing.
-        </p>
+      <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-brass/40 p-8 text-center">
+        <p className="font-display text-2xl font-semibold">Use it, or gift it. That&apos;s the whole thing.</p>
         <p className="mt-2 text-steel">
           Still got a question? Just message me — I&apos;d rather you asked than wondered.
         </p>

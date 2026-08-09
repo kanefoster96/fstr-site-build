@@ -11,15 +11,23 @@ import Coin from "./Coin";
  */
 const COIN = 76;
 
-const STEPS = [
-  { key: "join", title: "Join", body: "Membership is £25 a month — one full haircut and a beard tidy, every month." },
-  { key: "added", title: "A token lands", body: "On your billing date a token — the gold coin — drops into your account. One token is one cut, and it's good for 60 days." },
-  { key: "book", title: "Use it to book", body: "Spend your token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message me." },
-  { key: "saved", title: "I save your cut", body: "Once we get it right, I save the lengths, the blend and how you like it — so next time you don't have to explain a thing." },
-  { key: "gift", title: "Not used it?", body: "Your token rolls over for another month. Still can't use it? It turns giftable — the silver coin — so you can send the cut to a mate." },
-] as const;
+export type ExplainerStep = {
+  key: string;
+  title: string;
+  body: string;
+  variant?: "gold" | "ghost" | "silver";
+};
 
-export default function TokenExplainer() {
+const DEFAULT_STEPS: ExplainerStep[] = [
+  { key: "join", variant: "gold", title: "Join", body: "Membership is £25 a month — one full haircut and a beard tidy, every month." },
+  { key: "added", variant: "gold", title: "A token lands", body: "On your billing date a token — the gold coin — drops into your account. One token is one cut, and it's good for 60 days." },
+  { key: "book", variant: "gold", title: "Use it to book", body: "Spend your token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message me." },
+  { key: "saved", variant: "ghost", title: "I save your cut", body: "Once we get it right, I save the lengths, the blend and how you like it — so next time you don't have to explain a thing." },
+  { key: "gift", variant: "silver", title: "Not used it?", body: "Your token rolls over for another month. Still can't use it? It turns giftable — the silver coin — so you can send the cut to a mate." },
+];
+
+export default function TokenExplainer({ steps = DEFAULT_STEPS }: { steps?: ExplainerStep[] }) {
+  const STEPS = steps;
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(false);
   const [coinTop, setCoinTop] = useState(0);
@@ -61,9 +69,10 @@ export default function TokenExplainer() {
     return () => io.disconnect();
   }, []);
 
-  const tone = active >= 4 ? "silver" : "gold";
-  const ghost = active === 3; // used — now a saved record
-  const spin = active * 180; // spins between steps as it travels
+  const v = STEPS[active]?.variant ?? "gold";
+  const tone = v === "silver" ? "silver" : "gold";
+  const ghost = v === "ghost"; // used — now a saved record
+  const spin = active * 180; // half-turn per step as it travels
 
   return (
     <div className="relative">
