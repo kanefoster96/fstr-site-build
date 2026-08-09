@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { mutate } from "@/lib/data/db";
 import { getSession } from "@/lib/auth";
-import { bookWithToken, createPrebook } from "@/lib/engine/booking";
+import { bookWithToken, bookWithSilverPair, createPrebook } from "@/lib/engine/booking";
 import { changePlan, PlanError, upgradeToMembership } from "@/lib/engine/membership";
 import { invoicePaid } from "@/lib/adapters/payments";
 import { giftToken } from "@/lib/engine/gifts";
@@ -35,6 +35,34 @@ export async function quickBookAction(formData: FormData) {
       }
       createPrebook(db, m.id, slotId);
       return "prebooked";
+    } catch (e) {
+      return (e as Error).message;
+    }
+  });
+
+  revalidatePath("/me");
+  revalidatePath("/me/book");
+  redirect(`/me?done=${encodeURIComponent(outcome)}`);
+}
+
+/** Pair two silver (expired) coins for a cut. Spends the two oldest, books the
+ *  chosen slot. Their backup for missing a couple of cuts in a row. */
+export async function bookSilverPairAction(formData: FormData) {
+  const session = await getSession();
+  if (!session.member) redirect("/join");
+  const slotId = String(formData.get("slot_id"));
+  const m = session.member;
+
+  const outcome = await mutate((db) => {
+    const silver = db.tokens
+      .filter((t) => t.member_id === m.id && t.state === "EXPIRED")
+      .sort((a, b) => Date.parse(a.expires_at) - Date.parse(b.expires_at));
+    if (silver.length < 2) return "You need two silver coins to pair for a cut.";
+    try {
+      bookWithSilverPair(db, m.id, slotId, [silver[0].id, silver[1].id], { via: "calendar" });
+      const slot = db.slots.find((s) => s.id === slotId);
+      if (slot) sendMail(db, "booking_confirmed", m.email, bookingConfirmedEmail(m.name, slot.starts_at, false));
+      return "silver_booked";
     } catch (e) {
       return (e as Error).message;
     }

@@ -78,7 +78,7 @@ function defaultSettings(): Settings {
       max_held: 5,
       active_display: 2,
       store_cap: 3,
-      plan_prompt_threshold: 5,
+      plan_prompt_threshold: 3,
       gift_life_days: 14,
       cancel_cutoff_hours: 24,
       cancel_extend_days: 7,
@@ -436,15 +436,18 @@ export function buildSeed(): DataStore {
     m.notes = "Card failed on the 1st — retry pending.";
   }
 
-  // Persona: an expired token that slipped through (all five states present).
+  // Persona: two lapsed tokens → two silver coins, demoing "pair two for a cut"
+  // (also gives us the EXPIRED state for the all-five-states demo).
   {
     const m = members[14];
-    const issued = addDays(NOW, -65);
-    const tok = mintToken(m.id, issued);
-    tok.issued_at = issued;
-    tok.expires_at = addDays(issued, 60);
-    tok.state = "EXPIRED";
-    logEvent(tok.id, "expired", "system", tok.expires_at);
+    for (const ageDays of [65, 72]) {
+      const issued = addDays(NOW, -ageDays);
+      const tok = mintToken(m.id, issued);
+      tok.issued_at = issued;
+      tok.expires_at = addDays(issued, 60);
+      tok.state = "EXPIRED";
+      logEvent(tok.id, "expired", "system", tok.expires_at);
+    }
   }
 
   // Demand fill for the staged-opening demo. The week fills backwards from

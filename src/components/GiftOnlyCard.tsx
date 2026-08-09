@@ -35,11 +35,11 @@ export default function GiftOnlyCard({
 
   return (
     <div className="flex flex-col items-center rounded-2xl border border-steel/30 bg-paper p-5 text-center">
-      <span className="num text-[10px] uppercase tracking-[0.15em] text-steel">Gift only</span>
+      <span className="num text-[10px] uppercase tracking-[0.15em] text-steel">Silver coin</span>
       <span ref={coinRef} data-coin className="mt-2 inline-block">
         <Coin size={84} tone="silver" />
       </span>
-      <p className="num mt-2 text-xs text-steel">Expired — still giftable</p>
+      <p className="num mt-2 text-xs text-steel">Lapsed — gift it, or pair two for a cut</p>
 
       {!open ? (
         <button

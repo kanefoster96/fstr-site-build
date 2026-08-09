@@ -38,8 +38,8 @@ const STEPS: ExplainerStep[] = [
   {
     key: "gift",
     variant: "silver",
-    title: "Roll it over, or gift it",
-    body: "Not used a token in time? It rolls over for another cycle. Still stuck? It turns silver and giftable — send the cut to a mate. Cancel whenever you like and any unused tokens stay yours until they run out.",
+    title: "Roll it over, gift it, or pair it",
+    body: "Not used a token in time? It rolls over for another cycle. If one finally lapses it turns silver — gift the cut to a mate, or pair two silver coins for a cut of your own (your backup for missing a couple in a row). Cancel whenever you like and any unused tokens stay yours until they run out.",
   },
 ];
 

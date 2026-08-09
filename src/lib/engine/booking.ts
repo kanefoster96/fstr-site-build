@@ -1,6 +1,6 @@
 import "server-only";
 import type { DataStore, Slot, Booking, Pence, CreatedVia } from "../types";
-import { reserveToken, cancelReservation, TokenError } from "./tokens";
+import { reserveToken, cancelReservation, spendSilverPair, TokenError } from "./tokens";
 import { markGiftRedeemed } from "./gifts";
 import { hoursBetween } from "../format";
 import { revealedWeekdays, isLastMinute } from "./schedule";
@@ -101,6 +101,41 @@ export function bookWithToken(
   db.bookings.push(booking);
   reserveToken(db, tokenId, id, memberId);
   if (opts.giftId) markGiftRedeemed(db, opts.giftId);
+  return booking;
+}
+
+/** Book a weekday slot by pairing two silver (expired) coins — both are spent. */
+export function bookWithSilverPair(
+  db: DataStore,
+  memberId: string,
+  slotId: string,
+  tokenIds: [string, string],
+  opts: { via?: CreatedVia } = {},
+): Booking {
+  const slot = db.slots.find((s) => s.id === slotId);
+  if (!slot) throw new TokenError("Slot not found.");
+  if (slot.booked) throw new TokenError("That slot's just gone.");
+  if (slot.day_type === "weekend") {
+    throw new TokenError("Weekend slots aren't bookable with silver coins.");
+  }
+  const [a, b] = tokenIds;
+
+  const id = bookingId();
+  slot.booked = true;
+  const booking: Booking = {
+    id,
+    member_id: memberId,
+    token_id: a,
+    combined_token_id: b,
+    slot_id: slotId,
+    kind: "member",
+    status: "confirmed",
+    price_paid: 0,
+    created_via: opts.via ?? "calendar",
+    created_at: db.clock.now,
+  };
+  db.bookings.push(booking);
+  spendSilverPair(db, a, b, memberId, id);
   return booking;
 }
 
@@ -219,6 +254,9 @@ export function cancelBooking(db: DataStore, bookingId: string, actor: string): 
 
   booking.status = "cancelled";
   slot.booked = false;
+
+  // Silver-pair bookings spent two already-lapsed coins — nothing to return.
+  if (booking.combined_token_id) return { forfeited: true };
 
   if (booking.token_id) {
     // Delegate the token side to the token engine's cancel rule.

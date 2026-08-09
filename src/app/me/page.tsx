@@ -9,7 +9,7 @@ import { getSession } from "@/lib/auth";
 import { getWallet, getUsual, getComingUp } from "@/lib/data/member";
 import { getDb } from "@/lib/data/db";
 import { gbp, daysLeftLabel, fmtDateTime, fmtMonthDay, fmtDay, fmtTime } from "@/lib/format";
-import { quickBookAction, quickGiftAction, upgradeMembershipAction, giftTokenByIdAction } from "./actions";
+import { quickBookAction, quickGiftAction, upgradeMembershipAction, giftTokenByIdAction, bookSilverPairAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +53,8 @@ export default async function WalletPage({
   const expired = wallet.tokens.filter((t) => t.state === "EXPIRED");
   const soonest = comingUp[0]?.slot;
   const usualSlot = usual?.slot;
+  const pairSlot = usualSlot ?? soonest;
+  const pairSlotLabel = pairSlot ? `${fmtDay(pairSlot.starts_at).split(" ")[0]} ${fmtTime(pairSlot.starts_at)}` : "";
   const walletFull = wallet.held >= db.settings.rules.max_held;
 
   return (
@@ -66,6 +68,7 @@ export default async function WalletPage({
       )}
       {sp.done === "booked" && <Banner>Booked — your token&apos;s reserved and the clock&apos;s frozen. ❄</Banner>}
       {sp.done === "prebooked" && <Banner>Held for you — it confirms the moment your next token lands.</Banner>}
+      {sp.done === "silver_booked" && <Banner>Booked — two silver coins paired for a cut. Nothing wasted. ✂</Banner>}
       {(sp.booked || sp.welcome) && (
         <Banner>
           You&apos;re all set. Welcome to FSTR. ✂{sp.credit ? ` £${(Number(sp.credit) / 100).toFixed(0)} trial credit applied.` : ""}
@@ -217,7 +220,7 @@ export default async function WalletPage({
               <p className="mt-1 text-sm text-steel">
                 {wallet.atCap
                   ? `You're holding all ${wallet.maxHeld}. Nothing's charged until you've room. Increase the time between cuts so tokens don't pile up — a longer plan saves you money — or gift a couple to mates.`
-                  : `You've ${issued.length + gifted.length} on the go. If you're cutting less often, increase the time between cuts — a token drops less often and you'll save money without ever wasting one.`}
+                  : `You've ${issued.length + gifted.length} in hand — your next billing date makes it ${issued.length + gifted.length + 1}. Increase the time between cuts so a token drops less often: you'll save money and never let one stack up unused.`}
               </p>
               <div className="mt-3">
                 <PlanPicker plans={wallet.plans} planPrices={wallet.planPrices} current={wallet.cycleWeeks} locked={wallet.planLocked} from="me" />
@@ -334,6 +337,36 @@ export default async function WalletPage({
       {(reserved.length > 0 || gifted.length > 0 || expired.length > 0) && (
         <section className="mt-10">
           <h2 className="font-display text-2xl font-semibold">In play</h2>
+
+          {/* Two silver coins = one cut — a backup for missing a couple in a row */}
+          {expired.length >= 2 && (
+            <div className="mt-3 rounded-2xl border border-brass/40 bg-mist p-5">
+              <div className="flex items-center gap-3">
+                <span className="flex -space-x-4">
+                  <Coin size={44} tone="silver" />
+                  <Coin size={44} tone="silver" />
+                </span>
+                <div>
+                  <p className="font-display text-lg font-semibold">Two silver coins = one cut</p>
+                  <p className="text-sm text-steel">
+                    You&apos;ve {expired.length} silver {expired.length === 1 ? "coin" : "coins"}. Pair two to
+                    book a cut, or gift them below.
+                  </p>
+                </div>
+              </div>
+              {pairSlot ? (
+                <form action={bookSilverPairAction} className="mt-3">
+                  <input type="hidden" name="slot_id" value={pairSlot.id} />
+                  <button className="w-full rounded-full bg-ink py-3 text-sm font-semibold text-paper">
+                    Pair two for {pairSlotLabel}
+                  </button>
+                </form>
+              ) : (
+                <Button href="/me/book" className="mt-3 w-full">Pick a slot to pair two</Button>
+              )}
+            </div>
+          )}
+
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {reserved.map((t) => (
               <MiniCoin key={t.id} label="Reserved" tone="ink">

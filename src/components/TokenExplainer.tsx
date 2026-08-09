@@ -23,7 +23,7 @@ const DEFAULT_STEPS: ExplainerStep[] = [
   { key: "added", variant: "gold", title: "A token lands", body: "On each billing date a token — the gold coin — drops into your account. One token is one cut, and it lasts two billing cycles." },
   { key: "book", variant: "gold", title: "Use it to book", body: "Spend your token on a weekday appointment, up to two weeks ahead. Can't see a time that works? Just message me." },
   { key: "saved", variant: "ghost", title: "I save your cut", body: "Once we get it right, I save the lengths, the blend and how you like it — so next time you don't have to explain a thing." },
-  { key: "gift", variant: "silver", title: "Not used it?", body: "Your token rolls over. Still can't use it? It turns giftable — the silver coin — so you can send the cut to a mate." },
+  { key: "gift", variant: "silver", title: "Not used it?", body: "Your token rolls over. If one lapses it turns silver — gift it to a mate, or pair two silver coins for a cut. Nothing's ever wasted." },
 ];
 
 export default function TokenExplainer({ steps = DEFAULT_STEPS }: { steps?: ExplainerStep[] }) {

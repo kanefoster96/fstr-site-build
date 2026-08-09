@@ -113,6 +113,7 @@ export interface Booking {
   id: string;
   member_id: string | null; // nullable for one-offs
   token_id: string | null; // nullable for one-offs / weekend publics
+  combined_token_id?: string | null; // second silver coin when two are paired for a cut
   slot_id: string;
   kind: BookingKind;
   status: BookingStatus;

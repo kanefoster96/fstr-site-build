@@ -160,6 +160,32 @@ export function cancelReservation(
   return { token: t, forfeited: false };
 }
 
+/**
+ * Two silver coins make one cut (§4, revised). A silver coin is an EXPIRED
+ * token — normally gift-only. Rather than let a lapsed cut go to waste, a member
+ * can pair two of them to book: both are spent (REDEEMED) against one booking,
+ * each logged as half of the pair. Backup value for missing two cuts in a row.
+ */
+export function spendSilverPair(
+  db: DataStore,
+  tokenIdA: string,
+  tokenIdB: string,
+  actor: string,
+  bookingId: string,
+): void {
+  if (tokenIdA === tokenIdB) throw new TokenError("Need two different silver coins.");
+  const a = find(db, tokenIdA);
+  const b = find(db, tokenIdB);
+  assertState(a, "EXPIRED");
+  assertState(b, "EXPIRED");
+  if (a.member_id !== b.member_id) throw new TokenError("Both coins must be the same member's.");
+  for (const [t, other] of [[a, b], [b, a]] as const) {
+    t.state = "REDEEMED";
+    t.booking_id = bookingId;
+    logToken(db, t.id, "redeemed", actor, { via: "silver_pair", paired_with: other.id, booking_id: bookingId });
+  }
+}
+
 /** Barber goodwill reinstatement — one per member per year (§4.5). */
 export function reinstateToken(db: DataStore, tokenId: string, actor: string): Token {
   const t = find(db, tokenId);

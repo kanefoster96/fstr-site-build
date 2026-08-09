@@ -16,13 +16,10 @@ export default async function HomePage() {
       {/* Hero — lead with Adam's standards */}
       <section className="pt-10 sm:pt-14">
         <Container className="flex flex-col items-center text-center animate-fade-up">
-          <div className="relative mb-3">
-            <Coin size={200} className="mx-auto" />
-            <div className="absolute -bottom-3 left-1/2 h-6 w-36 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
+          <div className="relative mb-8">
+            <Coin size={100} className="mx-auto" />
+            <div className="absolute -bottom-2 left-1/2 h-4 w-20 -translate-x-1/2 rounded-full bg-ink/10 blur-md" />
           </div>
-          <p className="mb-8 text-sm text-steel">
-            Your token — one lands each billing cycle, and each one is a cut.
-          </p>
 
           <Eyebrow>North Tyneside · One barber · One chair</Eyebrow>
           <h1 className="mt-4 font-display text-5xl font-bold leading-[0.95] sm:text-6xl">

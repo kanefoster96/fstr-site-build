@@ -11,7 +11,7 @@ import Coin from "./Coin";
 const STEPS = [
   { n: "1", title: "Earn a token", body: "Every billing date drops one gold coin in your wallet. One token = one full cut." },
   { n: "2", title: "Spend it to book", body: "Pick a weekday slot and the token books it — no card at the chair." },
-  { n: "3", title: "Keep it or gift it", body: "Tokens last two billing cycles and roll over. Not using one? It turns silver — send it to a mate." },
+  { n: "3", title: "Keep, gift or pair it", body: "Tokens last two billing cycles. Lapsed ones turn silver — gift them, or pair two silver coins for a cut." },
 ];
 
 export default function TokenGuide({ className = "" }: { className?: string }) {
@@ -48,8 +48,12 @@ export default function TokenGuide({ className = "" }: { className?: string }) {
       {open && (
         <div
           role="dialog"
-          className="animate-pop absolute bottom-full left-1/2 z-50 mb-2 w-72 -translate-x-1/2 rounded-2xl border border-steel/25 bg-paper p-4 text-left shadow-xl"
+          className="animate-pop absolute left-1/2 top-full z-50 mt-3 w-[min(18rem,88vw)] -translate-x-1/2 rounded-2xl border border-steel/25 bg-paper p-4 text-left shadow-xl"
         >
+          <span
+            aria-hidden
+            className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-steel/25 bg-paper"
+          />
           <div className="flex items-center gap-3">
             <Coin size={48} />
             <p className="font-display text-base font-semibold text-ink">
@@ -69,10 +73,6 @@ export default function TokenGuide({ className = "" }: { className?: string }) {
               </li>
             ))}
           </ol>
-          <span
-            aria-hidden
-            className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-steel/25 bg-paper"
-          />
         </div>
       )}
     </span>
