@@ -63,10 +63,9 @@ export default async function SiteHeader() {
           )}
         </nav>
 
-        {/* Mobile cluster: coin · (Sign in|Add tokens) · hamburger */}
-        <div className="flex items-center gap-3 md:hidden">
-          <HeaderTokens initial={held} />
-          {!signedIn && <JoinButton />}
+        {/* Mobile cluster: token holder (with + to add) · hamburger */}
+        <div className="flex items-center gap-2.5 md:hidden">
+          <HeaderTokens initial={held} withAdd />
           <MobileMenu links={menuLinks} signedIn={signedIn} />
         </div>
       </Container>
