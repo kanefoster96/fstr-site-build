@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import Coin from "./Coin";
 import { gbp } from "@/lib/format";
 import { completeMembership, completeOneOff, completeSkip, type OnboardData } from "@/app/join/actions";
 
@@ -18,13 +18,12 @@ export default function OnboardingWizard({
   slots,
   rate,
   oneOffPrice,
-  plans,
   foundingLeft,
 }: {
   slots: SlotOption[];
   rate: number;
   oneOffPrice: number;
-  plans: number[];
+  plans?: number[];
   foundingLeft: number;
 }) {
   const [step, setStep] = useState(0);
@@ -32,22 +31,19 @@ export default function OnboardingWizard({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<number>(4);
-  const [planWeeks, setPlanWeeks] = useState<number>(4);
-  const [usualCut, setUsualCut] = useState("");
   const [slotId, setSlotId] = useState<string | null>(null);
 
-  const STEPS = ["Account", "About you", "Your plan", "First cut", "Ready"];
-  const canNext = step === 0 ? name.trim() && email.trim() : true;
+  const STEPS = ["You", "How often", "First cut", "Ready"];
+  const canNext = step === 0 ? !!(name.trim() && email.trim()) : true;
   const data: OnboardData = {
     name: name.trim(),
     email: email.trim(),
     avatarUrl: avatar,
     frequencyWeeks: frequency,
-    planWeeks,
-    usualCut: usualCut.trim(),
+    planWeeks: frequency, // frequency sets the plan; every plan is the same price
+    usualCut: "",
     slotId,
   };
 
@@ -75,97 +71,60 @@ export default function OnboardingWizard({
       </div>
 
       <div className="mt-8 rounded-3xl border border-steel/20 bg-paper p-6 sm:p-8">
-        {/* Step 0 — account / login */}
+        {/* Step 0 — your profile */}
         {step === 0 && (
-          <Step title="Let's get you sorted" blurb="Two seconds — this sets up your login.">
-            <Field label="Your name" value={name} onChange={setName} placeholder="Danny Robson" />
-            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="danny@example.com" />
-            <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="Choose a password" />
-            <p className="num text-[11px] text-steel">Mock login — no real account is created.</p>
-          </Step>
-        )}
-
-        {/* Step 1 — about you */}
-        {step === 1 && (
-          <Step title="A bit about you" blurb="So the chair knows your usual before you sit down.">
-            <div className="flex items-center gap-4">
-              <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-mist">
-                {avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatar} alt="You" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="num text-lg text-steel">{name.slice(0, 1).toUpperCase() || "?"}</span>
-                )}
-              </div>
-              <label className="cursor-pointer rounded-full border border-steel/50 px-4 py-2 text-sm hover:border-ink">
-                Add a photo
+          <Step title="Set up your profile" blurb="Two quick things — and a photo if you fancy.">
+            <div className="flex flex-col items-center gap-3">
+              <label className="relative cursor-pointer">
+                <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-mist ring-2 ring-brass/30">
+                  {avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatar} alt="You" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="num text-2xl text-steel">{name.slice(0, 1).toUpperCase() || "+"}</span>
+                  )}
+                </span>
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-3 py-1 text-[11px] font-medium text-paper">
+                  {avatar ? "Change" : "Add photo"}
+                </span>
                 <input type="file" accept="image/*" className="hidden" onChange={onPhoto} />
               </label>
+              <p className="num text-[11px] text-steel">Your barbering profile</p>
             </div>
 
-            <div>
-              <p className="text-sm font-medium">How often do you get a cut?</p>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {FREQS.map((f) => (
-                  <button
-                    key={f.weeks}
-                    type="button"
-                    onClick={() => {
-                      setFrequency(f.weeks);
-                      setPlanWeeks(f.weeks);
-                    }}
-                    className={`rounded-xl border p-3 text-left ${
-                      frequency === f.weeks ? "border-brass bg-mist" : "border-steel/30"
-                    }`}
-                  >
-                    <span className="block text-sm font-medium">{f.label}</span>
-                    {f.sub && <span className="num block text-[11px] text-steel">{f.sub}</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Field label="Your usual (optional)" value={usualCut} onChange={setUsualCut} placeholder="Skin fade, scissor top" />
+            <Field label="Your name" value={name} onChange={setName} placeholder="Danny Robson" />
+            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="danny@example.com" />
+            <p className="num text-[11px] text-steel">Mock sign-up — no real account is created.</p>
           </Step>
         )}
 
-        {/* Step 2 — plan */}
+        {/* Step 1 — cut frequency */}
+        {step === 1 && (
+          <Step title="How often do you get a cut?" blurb="This sets how often a token lands — you can change it any time.">
+            <div className="grid grid-cols-2 gap-2">
+              {FREQS.map((f) => (
+                <button
+                  key={f.weeks}
+                  type="button"
+                  onClick={() => setFrequency(f.weeks)}
+                  className={`rounded-xl border p-4 text-left ${
+                    frequency === f.weeks ? "border-brass bg-mist" : "border-steel/30"
+                  }`}
+                >
+                  <span className="block text-sm font-medium">{f.label}</span>
+                  {f.sub && <span className="num block text-[11px] text-steel">{f.sub}</span>}
+                </button>
+              ))}
+            </div>
+            <p className="num text-[11px] text-steel">
+              Every plan is <span className="value">{gbp(rate)}</span> a token — the pace just sets how
+              often one drops.
+            </p>
+          </Step>
+        )}
+
+        {/* Step 2 — first cut */}
         {step === 2 && (
-          <Step title="Your plan" blurb="Your cut comes as often as you like — pick the pace that suits you. Same price whichever you choose.">
-            <div className="flex items-center gap-3 rounded-2xl bg-mist p-4">
-              <Coin size={48} />
-              <div>
-                <p className="num text-2xl font-semibold value">{gbp(rate)}</p>
-                <p className="num text-xs text-steel">per cut · every plan</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium">A cut every…</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {plans.map((w) => (
-                  <button
-                    key={w}
-                    type="button"
-                    onClick={() => setPlanWeeks(w)}
-                    className={`num rounded-full px-4 py-2 text-sm ${
-                      planWeeks === w ? "bg-brass text-ink" : "border border-steel/50 hover:border-ink"
-                    }`}
-                  >
-                    {w} wks
-                    {w === frequency && planWeeks !== w ? "" : ""}
-                  </button>
-                ))}
-              </div>
-              <p className="num mt-2 text-[11px] text-steel">
-                Recommended from your answer: <span className="value">{frequency} weeks</span>. Change it anytime,
-                once per cycle.
-              </p>
-            </div>
-          </Step>
-        )}
-
-        {/* Step 3 — first cut */}
-        {step === 3 && (
           <Step title="Book your first cut" blurb="Pick a slot now, or sort it later from your dashboard.">
             {slots.length === 0 ? (
               <p className="text-sm text-steel">No slots open this second — you can book from your dashboard.</p>
@@ -196,17 +155,16 @@ export default function OnboardingWizard({
           </Step>
         )}
 
-        {/* Step 4 — choose path */}
-        {step === 4 && (
+        {/* Step 3 — choose path */}
+        {step === 3 && (
           <Step title={`All set, ${name.split(" ")[0] || "you"}`} blurb="Choose how you want to start.">
             <div className="rounded-xl bg-mist p-3 text-sm">
               <p className="num text-steel">
                 {selectedSlot ? `First cut: ${selectedSlot.day} ${selectedSlot.time}` : "First cut: pick later"}
-                {" · "}cut every {planWeeks} wks
+                {" · "}a token every {frequency} wks
               </p>
             </div>
 
-            {/* Membership */}
             <button
               type="button"
               disabled={pending}
@@ -217,12 +175,11 @@ export default function OnboardingWizard({
                 <span className="font-medium">Start membership</span>
                 <span className="num">{gbp(rate)}/cycle</span>
               </span>
-              <span className="mt-0.5 block text-sm text-paper/80">
-                Your first cut now, and {selectedSlot ? "your appointment booked in" : "book whenever suits"}.
+              <span className="mt-0.5 block text-sm text-ink/70">
+                Your first token now, and {selectedSlot ? "your cut booked in" : "book whenever suits"}.
               </span>
             </button>
 
-            {/* One-off */}
             <button
               type="button"
               disabled={pending}
@@ -235,11 +192,10 @@ export default function OnboardingWizard({
               </span>
               <span className="mt-0.5 block text-sm text-steel">
                 One-off, no commitment. Like it and join on the day — we knock{" "}
-                {gbp(oneOffPrice - rate)} off your first cut.
+                {gbp(oneOffPrice - rate)} off your first token.
               </span>
             </button>
 
-            {/* Skip */}
             <button
               type="button"
               disabled={pending}
@@ -250,13 +206,19 @@ export default function OnboardingWizard({
             </button>
 
             <p className="num text-center text-[11px] text-steel">
+              A token is earned on each billing date and used to redeem a cut.{" "}
+              <Link href="/how-it-works" className="value underline underline-offset-2">
+                See how tokens work
+              </Link>
+            </p>
+            <p className="num text-center text-[11px] text-steel">
               Mock checkout · no card charged · {foundingLeft} Founding seats left
             </p>
           </Step>
         )}
 
         {/* Nav */}
-        {step < 4 && (
+        {step < 3 && (
           <div className="mt-8 flex items-center justify-between">
             <button
               type="button"

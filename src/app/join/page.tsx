@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Coin from "@/components/Coin";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import { Container, Button, Num, Eyebrow } from "@/components/ui";
@@ -44,7 +45,11 @@ export default async function JoinPage({
           Let&apos;s find your <span className="value">pace</span>.
         </h1>
         <p className="mx-auto mt-2 max-w-md text-steel">
-          A quick, personal setup — then you&apos;re ready for your first cut.
+          Membership earns you a token on each billing date — one token, one cut. Book with a token,
+          or try a one-off first.{" "}
+          <Link href="/how-it-works" className="value underline underline-offset-4">
+            See how tokens work →
+          </Link>
         </p>
       </div>
 

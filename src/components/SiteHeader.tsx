@@ -70,14 +70,14 @@ function TokenCoin() {
   );
 }
 
-/** Join CTA in the coin colour. */
+/** "Add tokens" CTA — a clean white pill that pairs with the empty coin. */
 function JoinButton({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/join"
-      className={`inline-flex items-center justify-center rounded-full bg-[var(--coin-gold)] px-5 py-2 text-sm font-semibold text-ink transition-colors hover:brightness-95 ${className}`}
+      className={`inline-flex items-center justify-center gap-1 rounded-full border border-steel/40 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:border-ink ${className}`}
     >
-      Join
+      <span aria-hidden className="value">+</span> Add tokens
     </Link>
   );
 }
