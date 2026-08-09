@@ -101,6 +101,46 @@ export function giftReceivedEmail(fromName: string, code: string, expiresAt: str
   };
 }
 
+export function nudgeEmail(name: string, dayMark: number, availableCount: number, expiresAt: string): MailTemplate {
+  const heat = dayMark >= 50 ? "Don't let it slip" : dayMark >= 20 ? "Still time" : "Your cut's waiting";
+  return {
+    subject: `${heat} — your cut's ready to book`,
+    preview: `${availableCount} slots open · use it by ${fmtMonthDay(expiresAt)}.`,
+    html: shell(
+      heat,
+      `<p>Alright ${name.split(" ")[0]} — your token's been sat ${mono(String(dayMark))} days. There ${
+        availableCount === 1 ? "is" : "are"
+      } ${mono(String(availableCount))} slot${availableCount === 1 ? "" : "s"} open right now, and it's good until ${mono(fmtMonthDay(expiresAt))}.</p>
+       <p>Two taps and it's booked — or just message the chair.</p>`,
+      { label: "Book your cut", href: "/me/book" },
+    ),
+  };
+}
+
+export function streakMilestoneEmail(name: string, badge: string): MailTemplate {
+  const perk =
+    badge === "12 Months"
+      ? "a free cut has landed in your wallet, and your priority booking continues"
+      : "you've unlocked priority booking — you'll see new slots 24 hours early";
+  return {
+    subject: `${badge} with FSTR 🎉`,
+    preview: perk,
+    html: shell(
+      `${badge}. Nice one.`,
+      `<p>That's ${mono(badge.toLowerCase())} of sharp cuts, ${name.split(" ")[0]}. As a thank you, ${perk}.</p>`,
+      { label: "Open your wallet", href: "/me" },
+    ),
+  };
+}
+
+export function reminder1hEmail(name: string, startsAt: string): MailTemplate {
+  return {
+    subject: "See you in an hour",
+    preview: fmtDateTime(startsAt),
+    html: shell("Nearly time", `<p>Your cut's at ${mono(fmtDateTime(startsAt).split("· ")[1] ?? "")}. Door's open — see you shortly.</p>`),
+  };
+}
+
 export function paymentFailedEmail(name: string, retryDay: number, prebookAtRisk: boolean): MailTemplate {
   return {
     subject: "Payment didn't go through",

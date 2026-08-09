@@ -2,6 +2,8 @@ import "server-only";
 import type { DataStore, Member } from "../types";
 import { daysBetween } from "../format";
 import { mintToken, heldCount, logToken } from "./tokens";
+import { sendMail } from "../adapters/mail";
+import { streakMilestoneEmail } from "../emails";
 
 /**
  * Gamification (§11) — one currency, two uses, everything else decoration:
@@ -42,6 +44,7 @@ export function refreshMember(db: DataStore, member: Member): void {
   const months = Math.floor(daysBetween(sub.started_at, db.clock.now) / MONTH_DAYS);
   member.streak_months = Math.max(member.streak_months ?? 0, months);
 
+  const prev = new Set(member.badges ?? []);
   const badges = new Set(member.badges ?? []);
   if ((member.seat_number ?? 999) <= 50) badges.add("Founding Member");
   if (months >= 6) badges.add("6 Months");
@@ -50,6 +53,12 @@ export function refreshMember(db: DataStore, member: Member): void {
     queueBonus(member, 1); // a free cut on your first year
   }
   member.badges = [...badges];
+  // Celebrate a newly-earned milestone once.
+  for (const milestone of ["6 Months", "12 Months"]) {
+    if (!prev.has(milestone) && badges.has(milestone)) {
+      sendMail(db, "streak_milestone", member.email, streakMilestoneEmail(member.name, milestone));
+    }
+  }
   releaseQueuedBonus(db, member);
 }
 
