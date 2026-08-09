@@ -3,6 +3,7 @@ import { Container, Button, Num, Eyebrow, Card } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import BarberGate from "@/components/BarberGate";
 import AdminNav from "@/components/AdminNav";
+import Avatar from "@/components/Avatar";
 import { getDb } from "@/lib/data/db";
 import { fmtDateTime } from "@/lib/format";
 import { redeemAction } from "./actions";
@@ -65,7 +66,8 @@ export default async function ScanPage({
           {reserved.map(({ token, slot, member }) => (
             <Card key={token.id} className="!bg-mist">
               <div className="flex items-start gap-4">
-                <Coin size={56} ring={0.5} />
+                <Avatar src={member?.avatar_url} name={member?.name ?? "Member"} size={48} />
+                <Coin size={44} ring={0.5} />
                 <div className="flex-1">
                   <p className="font-medium">{member?.name}</p>
                   <p className="text-xs text-steel">

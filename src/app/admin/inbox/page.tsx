@@ -7,6 +7,7 @@ import { fmtTime, fmtDay } from "@/lib/format";
 import { sendBarberMessage, offerSlotAction } from "./actions";
 import BarberGate from "@/components/BarberGate";
 import AdminNav from "@/components/AdminNav";
+import Avatar from "@/components/Avatar";
 
 export const dynamic = "force-dynamic";
 
@@ -57,11 +58,16 @@ export default async function InboxPage({
                 href={`/admin/inbox?chat=${c.id}`}
                 className={`block rounded-xl p-3 ${c.id === activeId ? "bg-mist" : "hover:bg-mist/60"}`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{m?.name}</span>
-                  {c.unread_for_barber && <span className="h-2 w-2 rounded-full bg-brass" />}
+                <div className="flex items-center gap-2">
+                  <Avatar src={m?.avatar_url} name={m?.name ?? "Member"} size={32} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="truncate text-sm font-medium">{m?.name}</span>
+                      {c.unread_for_barber && <span className="h-2 w-2 shrink-0 rounded-full bg-brass" />}
+                    </div>
+                    <p className="truncate text-xs text-steel">{last?.body}</p>
+                  </div>
                 </div>
-                <p className="truncate text-xs text-steel">{last?.body}</p>
               </a>
             );
           })}
@@ -71,9 +77,12 @@ export default async function InboxPage({
         <div>
           {active && member ? (
             <div className="rounded-2xl border border-steel/25 bg-mist p-4">
-              <p className="text-sm font-medium">
-                {member.name} <span className="num text-steel">· usual: {member.usual_cut}</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <Avatar src={member.avatar_url} name={member.name} size={36} />
+                <p className="text-sm font-medium">
+                  {member.name} <span className="num text-steel">· usual: {member.usual_cut ?? "—"}</span>
+                </p>
+              </div>
 
               <div className="mt-3 flex flex-col gap-3">
                 {messages.map((m) => {

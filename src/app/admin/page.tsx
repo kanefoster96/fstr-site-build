@@ -4,6 +4,7 @@ import { Container, Eyebrow, Num, Card } from "@/components/ui";
 import { getSession } from "@/lib/auth";
 import BarberGate from "@/components/BarberGate";
 import AdminNav from "@/components/AdminNav";
+import Avatar from "@/components/Avatar";
 import { getTodayBookings, getAdminNumbers } from "@/lib/data/admin";
 import { getDb } from "@/lib/data/db";
 import { fmtTime, fmtDay } from "@/lib/format";
@@ -62,7 +63,8 @@ export default async function AdminTodayPage() {
         <div className="mt-4 space-y-3">
           {today.map(({ booking, slot, member, token }) => (
             <div key={booking.id} className="flex items-center gap-4 rounded-2xl border border-steel/25 bg-paper p-4">
-              <Coin size={44} ring={token?.state === "RESERVED" ? 0.5 : undefined} ghost={!token} />
+              <Avatar src={member?.avatar_url} name={member?.name ?? booking.contact_name ?? "One-off"} size={44} />
+              <Coin size={36} tone={token?.state === "EXPIRED" ? "silver" : "gold"} ring={token?.state === "RESERVED" ? 0.5 : undefined} ghost={!token} />
               <div className="flex-1">
                 <p className="font-medium">
                   {member?.name ?? booking.contact_name ?? "One-off"}{" "}
