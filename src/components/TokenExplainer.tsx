@@ -1,114 +1,100 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Coin from "./Coin";
 
 /**
- * The one orchestrated moment (§2): the coin drops into a wallet on payment →
- * slides onto a calendar slot when booked → flips to reveal a gift code when
- * gifted. Scroll-triggered, one sequence, respects prefers-reduced-motion —
- * when reduced motion is set we render the resting end-state of each step.
+ * The journey of a single cut, told as you scroll. One coin starts beside
+ * "Join", travels down beside each step (spinning as it goes), fades to a saved
+ * record when it's used, then flips to a silver, giftable coin at "can't use
+ * it". Respects prefers-reduced-motion (the coin simply sits beside the steps).
  */
+const COIN = 76;
+
 const STEPS = [
   { key: "join", title: "Join", body: "£25 a month — one full haircut and a beard tidy, every month." },
   { key: "added", title: "Your cut is added", body: "A haircut lands in your account on your billing date. You've got 60 days to use it." },
   { key: "book", title: "Book your time", body: "Pick a weekday appointment up to two weeks ahead. Can't see the time you need? Just message me." },
   { key: "saved", title: "I save your cut", body: "Once we get it right, I save the lengths, details and how you like it — so next time's easy." },
-  { key: "rollover", title: "Can't use it?", body: "It rolls over for one more cycle. Still stuck? Gift the cut to a mate." },
+  { key: "gift", title: "Can't use it?", body: "It rolls over for one more cycle. Still stuck? Gift the cut to a mate." },
 ] as const;
 
 export default function TokenExplainer() {
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(false);
-  const refs = useRef<(HTMLLIElement | null)[]>([]);
+  const [coinTop, setCoinTop] = useState(0);
+  const cardRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduced(mq.matches);
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    const h = () => setReduced(mq.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
   }, []);
+
+  const place = useCallback((idx: number) => {
+    const card = cardRefs.current[idx];
+    if (card) setCoinTop(card.offsetTop + card.offsetHeight / 2 - COIN / 2);
+  }, []);
+
+  useEffect(() => {
+    place(active);
+  }, [active, place]);
+
+  useEffect(() => {
+    const onResize = () => place(active);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [active, place]);
 
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const idx = Number((e.target as HTMLElement).dataset.idx);
-            setActive(idx);
-          }
+          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.idx));
         });
       },
       { rootMargin: "-45% 0px -45% 0px", threshold: 0.01 },
     );
-    refs.current.forEach((el) => el && io.observe(el));
+    cardRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
   }, []);
 
-  const stage = active;
+  const tone = active >= 4 ? "silver" : "gold";
+  const ghost = active === 3; // "used" — now a saved record
+  const spin = active * 180; // spins between steps as it travels
 
   return (
-    <div className="relative grid gap-10 lg:grid-cols-2">
-      {/* Sticky stage */}
-      <div className="top-24 self-start lg:sticky">
-        <div className="relative mx-auto flex aspect-square max-w-md items-center justify-center rounded-3xl bg-mist">
-          {/* wallet plate */}
-          <div className="absolute bottom-8 left-8 right-8 h-24 rounded-2xl border border-steel/30 bg-paper/70" />
-          {/* calendar plate */}
-          <div
-            className={`absolute right-8 top-8 h-28 w-28 rounded-2xl border border-steel/30 bg-paper/70 transition-opacity duration-500 ${
-              stage >= 2 ? "opacity-100" : "opacity-30"
-            }`}
-          >
-            <div className="num p-2 text-[10px] text-steel">TUE</div>
-            <div className="num px-2 text-2xl value">11:00</div>
-          </div>
-          {/* the coin, positioned per stage */}
-          <div
-            className="absolute transition-all duration-700 ease-out"
-            style={{
-              transform: reduced
-                ? "none"
-                : stage === 0
-                  ? "translate(0, -30%) scale(0.9)"
-                  : stage === 1
-                    ? "translate(-28%, 20%) scale(1)"
-                    : stage === 2
-                      ? "translate(28%, -28%) scale(0.85)"
-                      : stage === 3
-                        ? "translate(-28%, 20%) scale(1)"
-                        : "translate(0, 0) scale(1.05)",
-            }}
-          >
-            <Coin
-              size={132}
-              flipped={stage === 4}
-              code={stage === 4 ? "BRASS-7Q2" : undefined}
-              ring={stage === 3 ? 0.55 : undefined}
-            />
-          </div>
-        </div>
+    <div className="relative">
+      {/* the travelling coin */}
+      <div
+        className="pointer-events-none absolute left-1 top-0 z-10 sm:left-3"
+        style={{
+          transform: reduced ? "none" : `translateY(${coinTop}px) rotate(${spin}deg)`,
+          transition: reduced ? "none" : "transform 650ms cubic-bezier(0.45,0,0.2,1)",
+        }}
+      >
+        <Coin size={COIN} tone={tone} ghost={ghost} />
       </div>
 
-      {/* Scrolling steps */}
-      <ol className="flex flex-col gap-6 lg:gap-16">
+      <ol className="space-y-5 pl-[92px] sm:space-y-8 sm:pl-[128px]">
         {STEPS.map((s, i) => (
           <li
             key={s.key}
             data-idx={i}
             ref={(el) => {
-              refs.current[i] = el;
+              cardRefs.current[i] = el;
             }}
-            className={`rounded-2xl p-6 transition-all duration-300 ${
-              stage === i ? "bg-mist" : "opacity-55"
+            className={`rounded-2xl border p-5 transition-all duration-300 ${
+              active === i ? "border-brass/40 bg-mist" : "border-transparent opacity-55"
             }`}
           >
             <div className="flex items-baseline gap-3">
               <span className="num text-sm value">0{i + 1}</span>
-              <h3 className="font-display text-2xl font-semibold">{s.title}</h3>
+              <h3 className="font-display text-xl font-semibold">{s.title}</h3>
             </div>
-            <p className="mt-2 text-steel">{s.body}</p>
+            <p className="mt-1.5 text-steel">{s.body}</p>
           </li>
         ))}
       </ol>
