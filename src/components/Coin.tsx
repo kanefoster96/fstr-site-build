@@ -18,13 +18,25 @@ type CoinProps = {
 };
 
 const PALETTE = {
-  gold: { fill: "var(--coin-gold)", rim: "var(--coin-gold-rim)", ink: "var(--coin-gold-ink)" },
-  silver: { fill: "var(--coin-silver)", rim: "var(--coin-silver-rim)", ink: "var(--coin-silver-ink)" },
+  gold: {
+    face: "var(--coin-gold)",
+    rim: "var(--coin-gold-rim)",
+    edge: "var(--coin-gold-edge)",
+    ink: "var(--coin-gold-ink)",
+  },
+  silver: {
+    face: "var(--coin-silver)",
+    rim: "var(--coin-silver-rim)",
+    edge: "var(--coin-silver-edge)",
+    ink: "var(--coin-silver-ink)",
+  },
 } as const;
 
+const ROUND = "var(--font-round)";
+
 /**
- * A simple flat coin: a solid warm-yellow circle with a thin darker rim and
- * plain text inside ("FSTR" / "1 x cut"). No shading, no idle animation.
+ * A simple cartoon coin: a gold rim with a darker edge line around a bright
+ * flat face, with chunky rounded lettering ("FSTR" / "1 CUT"). No shading.
  * Silver when it's gift-only.
  */
 export default function Coin({
@@ -38,16 +50,16 @@ export default function Coin({
   style,
 }: CoinProps) {
   const p = PALETTE[flipped ? "silver" : tone];
-  const r = 46;
+  const r = 44;
   const circumference = 2 * Math.PI * r;
   const dash = ring != null ? circumference * Math.max(0, Math.min(1, ring)) : 0;
 
   if (ghost) {
     return (
       <svg width={size} height={size} viewBox="0 0 120 120" className={className} style={style} role="img" aria-label="Empty token slot">
-        <circle cx="60" cy="60" r="53" fill="none" stroke="var(--steel)" strokeOpacity="0.4" strokeWidth="1.5" strokeDasharray="4 5" />
-        <text x="60" y="57" textAnchor="middle" fontFamily="var(--font-display)" fontSize="21" fontWeight="700" fill="var(--steel)" fillOpacity="0.5">FSTR</text>
-        <text x="60" y="74" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill="var(--steel)" fillOpacity="0.45" letterSpacing="1.5">1 x cut</text>
+        <circle cx="60" cy="60" r="53" fill="none" stroke="var(--steel)" strokeOpacity="0.4" strokeWidth="2" strokeDasharray="5 6" />
+        <text x="60" y="58" textAnchor="middle" fontFamily={ROUND} fontSize="26" fontWeight="800" fill="var(--steel)" fillOpacity="0.5">FSTR</text>
+        <text x="60" y="76" textAnchor="middle" fontFamily={ROUND} fontSize="12" fontWeight="700" fill="var(--steel)" fillOpacity="0.45">1 CUT</text>
       </svg>
     );
   }
@@ -62,25 +74,29 @@ export default function Coin({
       role="img"
       aria-label={flipped && code ? `Gift token, code ${code}` : tone === "silver" ? "Gift-only token" : "FSTR token"}
     >
-      {/* solid flat circle with a thin darker rim */}
-      <circle cx="60" cy="60" r="54" fill={p.fill} stroke={p.rim} strokeWidth="3" />
+      {/* outer edge line */}
+      <circle cx="60" cy="60" r="58" fill={p.edge} />
+      {/* gold rim band */}
+      <circle cx="60" cy="60" r="56" fill={p.rim} />
+      {/* bright face with a darker inner line */}
+      <circle cx="60" cy="60" r="47" fill={p.face} stroke={p.edge} strokeWidth="2.5" />
 
       {flipped && code ? (
         <>
-          <text x="60" y="53" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={p.ink} letterSpacing="2">GIFT</text>
-          <text x="60" y="73" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="14" fontWeight="600" fill={p.ink} letterSpacing="1">{code}</text>
+          <text x="60" y="52" textAnchor="middle" fontFamily={ROUND} fontSize="12" fontWeight="700" fill={p.ink} letterSpacing="1">GIFT</text>
+          <text x="60" y="74" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="13" fontWeight="600" fill={p.ink} letterSpacing="0.5">{code}</text>
         </>
       ) : (
         <>
-          <text x="60" y="57" textAnchor="middle" fontFamily="var(--font-display)" fontSize="30" fontWeight="700" fill={p.ink} letterSpacing="0.5">FSTR</text>
-          <text x="60" y="75" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fontWeight="500" fill={p.ink} letterSpacing="1">1 x cut</text>
+          <text x="60" y="57" textAnchor="middle" fontFamily={ROUND} fontSize="33" fontWeight="800" fill={p.ink}>FSTR</text>
+          <text x="60" y="78" textAnchor="middle" fontFamily={ROUND} fontSize="15" fontWeight="700" fill={p.ink} letterSpacing="0.5">1 CUT</text>
         </>
       )}
 
       {/* optional thin countdown ring (life remaining) */}
       {ring != null && (
         <circle
-          cx="60" cy="60" r={r} fill="none" stroke={p.rim} strokeWidth="3" strokeLinecap="round"
+          cx="60" cy="60" r={r} fill="none" stroke={p.edge} strokeWidth="3" strokeLinecap="round"
           strokeDasharray={`${dash} ${circumference}`} transform="rotate(-90 60 60)"
         />
       )}
