@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Coin from "@/components/Coin";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import TokenGuide from "@/components/TokenGuide";
@@ -45,9 +46,15 @@ export default async function JoinPage({
           Let&apos;s find your <span className="value">pace</span>.
         </h1>
         <p className="mx-auto mt-2 max-w-md text-steel">
-          Membership earns you a token on each billing date — one token, one cut. Book with a token,
-          or try a one-off first.{" "}
+          Buy a single token for a one-off cut, or become a member for cheaper tokens the more often
+          you come — one token, one cut, either way.{" "}
           <TokenGuide />
+        </p>
+        <p className="mx-auto mt-3 text-sm text-steel">
+          Already with us?{" "}
+          <Link href="/signin" className="value underline underline-offset-4">
+            Sign in
+          </Link>
         </p>
       </div>
 

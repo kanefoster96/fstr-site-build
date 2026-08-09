@@ -11,10 +11,15 @@ import Coin from "./Coin";
  *   fstr:token-earned  → +1, coin fills and pops
  *   fstr:token-spent   → −1 (down to empty)
  */
-export default function HeaderTokens({ size = 34 }: { size?: number }) {
-  const [tokens, setTokens] = useState(0);
+export default function HeaderTokens({ size = 34, initial = 0 }: { size?: number; initial?: number }) {
+  const [tokens, setTokens] = useState(initial);
   const [pop, setPop] = useState(false);
   const popTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep in step with the server's count when it changes (sign in / out, nav).
+  useEffect(() => {
+    setTokens(initial);
+  }, [initial]);
 
   useEffect(() => {
     const onEarned = () => {

@@ -27,13 +27,13 @@ export default async function WalletPage({
     return (
       <Container className="py-20 text-center">
         <Coin size={90} ghost className="mx-auto" />
-        <h1 className="mt-6 font-display text-3xl font-bold">No wallet yet</h1>
+        <h1 className="mt-6 font-display text-3xl font-bold">You&apos;re signed out</h1>
         <p className="mx-auto mt-3 max-w-sm text-steel">
-          Join to get your first token — or pick a seeded member in the dev panel to explore.
+          Sign in with the email you joined with to see your tokens — or join to get your first one.
         </p>
         <div className="mt-6 flex justify-center gap-3">
-          <Button href="/join">Join FSTR</Button>
-          <Button href="/dev" variant="ghost">Dev panel</Button>
+          <Button href="/signin">Sign in</Button>
+          <Button href="/join" variant="ghost">Join FSTR</Button>
         </div>
       </Container>
     );

@@ -122,7 +122,7 @@ export default function OnboardingWizard({
 
             <Field label="Your name" value={name} onChange={setName} placeholder="Danny Robson" />
             <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="danny@example.com" />
-            <p className="num text-[11px] text-steel">Mock sign-up — no real account is created.</p>
+            <p className="num text-[11px] text-steel">No password needed — sign back in any time with your email.</p>
           </Step>
         )}
 

@@ -24,6 +24,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The header reflects the (mock) signed-in session, so every page must render
+// per-request rather than being cached with a stale auth state.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB">

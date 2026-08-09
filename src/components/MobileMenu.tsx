@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { signOutAction } from "@/app/signin/actions";
 
 type NavLink = { href: string; label: string };
 
 /**
  * The mobile hamburger. Unlike a native <details>, this closes the moment you
  * pick a link, tap outside the panel, or hit Escape — so it never lingers open
- * over the page.
+ * over the page. Shows Add tokens (signed out) or Sign out (signed in).
  */
-export default function MobileMenu({ links }: { links: NavLink[] }) {
+export default function MobileMenu({ links, signedIn }: { links: NavLink[]; signedIn: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -58,13 +59,25 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/join"
-            onClick={() => setOpen(false)}
-            className="mt-2 flex w-full items-center justify-center gap-1 rounded-full border border-steel/40 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:border-ink"
-          >
-            <span aria-hidden className="value">+</span> Add tokens
-          </Link>
+          {signedIn ? (
+            <form action={signOutAction} className="mt-2">
+              <button
+                type="submit"
+                onClick={() => setOpen(false)}
+                className="w-full rounded-lg px-3 py-2 text-left text-sm text-steel hover:bg-mist hover:text-ink"
+              >
+                Sign out
+              </button>
+            </form>
+          ) : (
+            <Link
+              href="/join"
+              onClick={() => setOpen(false)}
+              className="mt-2 flex w-full items-center justify-center gap-1 rounded-full border border-steel/40 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition-colors hover:border-ink"
+            >
+              <span aria-hidden className="value">+</span> Add tokens
+            </Link>
+          )}
         </div>
       )}
     </div>

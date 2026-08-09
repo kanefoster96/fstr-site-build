@@ -158,7 +158,9 @@ export default async function HomePage() {
               <p className="text-sm text-steel">One-off cut</p>
               <p className="mt-2"><Num className="text-4xl font-semibold">{gbp(3500)}</Num></p>
               <ul className="mt-4 space-y-2 text-sm text-steel">
+                <li>Buys a single token — one full cut, beard tidy included.</li>
                 <li>Book up to seven days ahead, subject to availability.</li>
+                <li>No commitment. Join later for cheaper tokens.</li>
               </ul>
               <Button href="/book" variant="ghost" className="mt-5 w-full">Book a one-off</Button>
             </Card>
