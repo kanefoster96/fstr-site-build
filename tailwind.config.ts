@@ -76,6 +76,11 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        // FAQ answer reveal — a gentle drop-in when a question opens
+        "faq-open": {
+          "0%": { opacity: "0", transform: "translateY(-6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "coin-drop": "coin-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -87,6 +92,7 @@ const config: Config = {
         float: "float 4s ease-in-out infinite",
         pop: "pop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
         marquee: "marquee 32s linear infinite",
+        "faq-open": "faq-open 0.25s ease-out both",
       },
     },
   },

@@ -49,7 +49,8 @@ export default function Faq() {
       </h2>
       <div className="mt-6 divide-y divide-steel/15 overflow-hidden rounded-2xl border border-steel/15">
         {FAQS.map((f) => (
-          <details key={f.q} className="group px-5">
+          // name="faq" makes them mutually exclusive — opening one closes the rest.
+          <details key={f.q} name="faq" className="group px-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left font-medium [&::-webkit-details-marker]:hidden">
               {f.q}
               <span
@@ -59,7 +60,7 @@ export default function Faq() {
                 +
               </span>
             </summary>
-            <p className="pb-4 text-steel">{f.a}</p>
+            <p className="pb-4 text-steel group-open:animate-faq-open">{f.a}</p>
           </details>
         ))}
       </div>
