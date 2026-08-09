@@ -2,6 +2,7 @@ import Link from "next/link";
 import Coin from "@/components/Coin";
 import TokenExplainer from "@/components/TokenExplainer";
 import WorkMarquee from "@/components/WorkMarquee";
+import Faq from "@/components/Faq";
 import { Container, Button, Num, Eyebrow, Card, Hairline } from "@/components/ui";
 import { getSeatSummary } from "@/lib/data/queries";
 import { gbp } from "@/lib/format";
@@ -268,6 +269,13 @@ export default async function HomePage() {
               </figure>
             ))}
           </div>
+        </Container>
+      </section>
+
+      {/* FAQ */}
+      <section className="mt-24">
+        <Container>
+          <Faq />
         </Container>
       </section>
 
