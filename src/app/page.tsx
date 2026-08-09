@@ -47,7 +47,12 @@ export default async function HomePage() {
       <section className="mt-24">
         <Container>
           <div className="grid items-center gap-8 rounded-3xl bg-mist p-6 sm:p-10 lg:grid-cols-2">
-            <div className="aspect-[4/3] rounded-2xl bg-[linear-gradient(135deg,#e7e5df,#d7d5cd)]" aria-hidden />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/the-chair.jpg"
+              alt="Adam cutting a client's hair at the FSTR chair"
+              className="aspect-[4/3] w-full rounded-2xl object-cover object-center"
+            />
             <div>
               <Eyebrow>The Chair</Eyebrow>
               <h2 className="mt-3 font-display text-3xl font-semibold">
